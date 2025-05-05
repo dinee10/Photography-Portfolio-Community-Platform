@@ -70,9 +70,9 @@ const BlogCard = ({ blog, index }) => {
             <AnimatedText text={description} className="text-gray-600" />
           </p>
         </div>
-        <div className="text-blue-500 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition duration-300">
-          <AnimatedText text="Keep reading" className="text-blue-500" />
-          <span className="text-blue-500">→</span>
+        <div className="text-red-500 text-sm font-medium flex items-center gap-1 hover:text-red-700 transition duration-300">
+          <AnimatedText text="Keep reading" className="text-red-500" />
+          <span className="text-red-500">→</span>
         </div>
       </div>
     </Link>
@@ -208,46 +208,7 @@ export default function UserBlog() {
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen">
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-          }
-          @keyframes slideInFromLeft {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-          }
-          @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-          @keyframes slideInWord {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-          @keyframes headerSlide {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-          .animate-slideInWord {
-            animation: slideInWord 0.5s ease-out forwards;
-          }
-          .animate-headerSlide {
-            animation: headerSlide 1s ease-out forwards;
-          }
-          .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-          }
-          html {
-            scroll-behavior: smooth;
-          }
-        `}
-      </style>
+      
 
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
