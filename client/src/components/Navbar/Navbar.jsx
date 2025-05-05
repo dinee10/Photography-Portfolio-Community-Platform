@@ -8,10 +8,11 @@ const Navbar = () => {
   return (
     <nav className="bg-black shadow-md">
       <div className="container mx-auto flex items-center justify-between p-4">
-        {/* Navbar Text (replacing logo) */}
+        {/* Creative Navbar Text */}
         <div className="text-2xl font-bold">
-          <Link to="/user-blog" className="text-red-500 hover:text-red-100 transition duration-300">
-            THEClicK
+          <Link to="/user-blog" className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-purple-600 hover:from-red-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300 animate-pulse-once">
+            <span className="tracking-widest">TheClicK</span>
+            
           </Link>
         </div>
 
