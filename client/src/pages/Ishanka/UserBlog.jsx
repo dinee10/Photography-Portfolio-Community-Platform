@@ -243,7 +243,7 @@ export default function UserBlog() {
                           : placeholderImage
                       }
                       alt={blog.title}
-                      className="w-full h-32 md:h-48 object-cover border border-gray-600 animate-zoomIn"
+                      className="w-full h-32 md:h-48 object-cover border border-gray-900 animate-zoomIn"
                       loading="lazy"
                       onError={(e) => (e.target.src = placeholderImage)}
                       style={{ animationDelay: `${index * 0.2}s` }}
