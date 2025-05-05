@@ -301,9 +301,14 @@ export default function UserBlog() {
           <div>
             <h2 className="text-4xl font-bold text-white mb-4">My Journey</h2>
             <p className="text-white leading-relaxed mb-6">
-              From a young age, I've always had an affinity for fixing things, whether it was simple household repairs or creating something from scratch. This fascination led me to pursue formal training in various trades, including carpentry, electrical work, plumbing, and more. Over the years, I've had the privilege of working on diverse projects, from minor repairs to full-scale renovations, which has helped me develop a versatile skill set.
+            I'm Dinidu, a photography enthusiast who believes every photo tells a story. Over the years, 
+            I've explored everything from urban streets to remote landscapes,
+             always searching for unique moments to capture.
               <br /><br />
-              What started as a personal hobby soon evolved into a full-time profession, and I've built my business around the belief that every job deserves precision, care, and professionalism. I pride myself on being the go-to handyman you can trust to handle any job with skill and efficiency.
+              This blog is my creative space where I share photography tips, editing techniques, gear insights,
+               and personal experiences from behind the lens. 
+              Whether you're just starting out or refining your craft, 
+              I hope my journey and content inspire you to see beauty in everyday moments.
             </p>
             <Link
               to="/hire-me"
