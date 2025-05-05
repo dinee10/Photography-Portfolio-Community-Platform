@@ -1,26 +1,21 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
-
-const nameRegex = /^[A-Za-z\s]+$/;
-
-function ProgressUpdate() {
+export default function ProgressUpdate() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
   const [formData, setFormData] = useState({
-    name: '',
-    topic: '',
-    description: '',
-    status: '',
-    tag: '',
+    name: "",
+    topic: "",
+    description: "",
+    status: "",
+    tag: "",
   });
   const [file, setFile] = useState(null);
-  const [existingImage, setExistingImage] = useState(""); 
+  const [existingImage, setExistingImage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({
     name: "",
     topic: "",
@@ -30,54 +25,63 @@ function ProgressUpdate() {
     file: "",
   });
 
-  // Fetch progress data
   useEffect(() => {
-    const fetchProgress = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/progress/${id}`);
-        const progress = response.data;
+    if (!id) return;
+
+    axios
+      .get(`http://localhost:8080/progress/${id}`)
+      .then((res) => {
         setFormData({
-          name: progress.name || '',
-          topic: progress.topic || '',
-          description: progress.description || '',
-          status: progress.status || '',
-          tag: progress.tag || '',
+          name: res.data.name || "",
+          topic: res.data.topic || "",
+          description: res.data.description || "",
+          status: res.data.status || "",
+          tag: res.data.tag || "",
         });
-        setExistingImage(progress.image || "");
+        setExistingImage(res.data.image || "");
         setLoading(false);
-      } catch (err) {
-        console.error('Error fetching progress:', err);
-        setError('Failed to load progress data.');
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
         setLoading(false);
-      }
-    };
-    fetchProgress();
+        Swal.fire({
+          title: "Error",
+          text: "Failed to load progress data.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      });
   }, [id]);
 
-  // Handle form field change
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Handle file change
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFile(file);
-
-    // Validate file type
-    if (file && !file.type.startsWith("image/")) {
-      setFormErrors({ ...formErrors, file: "File must be an image" });
+  const handleInputChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === "file") {
+      const selectedFile = files ? files[0] : null;
+      setFile(selectedFile);
+      if (selectedFile && !selectedFile.type.startsWith("image/")) {
+        setFormErrors({ ...formErrors, file: "File must be an image" });
+      } else if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
+        setFormErrors({ ...formErrors, file: "Image size must not exceed 5MB" });
+      } else {
+        setFormErrors({ ...formErrors, file: "" });
+      }
     } else {
-      setFormErrors({ ...formErrors, file: "" });
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
     }
   };
 
-  // Validate fields before submitting
+  const handleDeleteImage = () => {
+    setExistingImage("");
+    setFile(null);
+  };
+
   const validateForm = () => {
     const errors = {};
     let isValid = true;
 
-    // Validate fields
     Object.keys(formData).forEach((field) => {
       if (!formData[field] || formData[field].trim() === "") {
         errors[field] = `${field} is required`;
@@ -85,17 +89,10 @@ function ProgressUpdate() {
       }
     });
 
-    // Validate image
-    if (file && file.size > 5 * 1024 * 1024) { // 5MB limit
-      errors.file = "Image size must not exceed 5MB";
-      isValid = false;
-    }
-
     setFormErrors(errors);
     return isValid;
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -119,137 +116,149 @@ function ProgressUpdate() {
     };
 
     const data = new FormData();
-    data.append('progress details', JSON.stringify(progressDetails));
+    data.append("progress details", JSON.stringify(progressDetails));
     if (file) {
-      data.append('file', file);
+      data.append("file", file);
     }
 
     try {
-      await axios.put(`http://localhost:8080/progress/${id}`, data, {
+      const response = await axios.put(`http://localhost:8080/progress/${id}`, data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       Swal.fire({
         title: "Success",
-        text: "Progress updated successfully!",
+        text: response.data.message || "Progress updated successfully!",
         icon: "success",
-      }).then(() => navigate("/progresslist"));
+        confirmButtonText: "OK",
+      }).then(() => navigate("/admin"));
     } catch (err) {
-      console.error('Error updating progress:', err);
+      console.error("Submit error:", err.response?.data || err.message);
       Swal.fire({
         title: "Error",
-        text: "Failed to update progress.",
+        text: err.response?.data?.error || "Failed to update progress.",
         icon: "error",
         confirmButtonText: "OK",
       });
     }
   };
 
-  if (loading) {
-    return <div className="container mt-5">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="container mt-5 text-danger">{error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-800">
-
-      <div className="container mx-auto py-10 px-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Update Progress</h1>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-800 font-semibold mb-2">Name</label>
-              <input
-                type="text"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.name ? "border-red-500" : "border-gray-300"}`}
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-              {formErrors.name && <span className="text-red-500 text-sm mt-1 block">{formErrors.name}</span>}
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="topic" className="block text-gray-800 font-semibold mb-2">Topic</label>
-              <input
-                type="text"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.topic ? "border-red-500" : "border-gray-300"}`}
-                id="topic"
-                name="topic"
-                value={formData.topic}
-                onChange={handleChange}
-              />
-              {formErrors.topic && <span className="text-red-500 text-sm mt-1 block">{formErrors.topic}</span>}
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-gray-800 font-semibold mb-2">Description</label>
-              <textarea
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.description ? "border-red-500" : "border-gray-300"}`}
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows="5"
-              />
-              {formErrors.description && <span className="text-red-500 text-sm mt-1 block">{formErrors.description}</span>}
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="status" className="block text-gray-800 font-semibold mb-2">Status</label>
-              <select
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.status ? "border-red-500" : "border-gray-300"}`}
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
-                <option value="">Select Status</option>
-                <option value="Started">Started</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-              {formErrors.status && <span className="text-red-500 text-sm mt-1 block">{formErrors.status}</span>}
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="tag" className="block text-gray-800 font-semibold mb-2">Tag</label>
-              <input
-                type="text"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.tag ? "border-red-500" : "border-gray-300"}`}
-                id="tag"
-                name="tag"
-                value={formData.tag}
-                onChange={handleChange}
-              />
-              {formErrors.tag && <span className="text-red-500 text-sm mt-1 block">{formErrors.tag}</span>}
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="file" className="block text-gray-800 font-semibold mb-2">Upload New Image (Optional)</label>
-              <input
-                type="file"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.file ? "border-red-500" : "border-gray-300"}`}
-                name="file"
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-              {formErrors.file && <span className="text-red-500 text-sm mt-1 block">{formErrors.file}</span>}
-            </div>
-
-            <button type="submit" className="btn btn-primary w-full py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              {loading ? 'Updating...' : 'Update Progress'}
-            </button>
-          </form>
+    <div className="max-w-3xl mx-auto mt-10">
+      <h1 className="text-3xl font-bold mb-6">Update Progress</h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.name ? "border-red-500" : "border-gray-300"}`}
+            required
+          />
+          {formErrors.name && <span className="text-red-500 text-sm mt-1 block">{formErrors.name}</span>}
         </div>
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Topic</label>
+          <input
+            type="text"
+            name="topic"
+            value={formData.topic}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.topic ? "border-red-500" : "border-gray-300"}`}
+            required
+          />
+          {formErrors.topic && <span className="text-red-500 text-sm mt-1 block">{formErrors.topic}</span>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.description ? "border-red-500" : "border-gray-300"}`}
+            rows="8"
+            required
+          />
+          {formErrors.description && <span className="text-red-500 text-sm mt-1 block">{formErrors.description}</span>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Status</label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.status ? "border-red-500" : "border-gray-300"}`}
+            required
+          >
+            <option value="">Select Status</option>
+            <option value="Started">Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+          {formErrors.status && <span className="text-red-500 text-sm mt-1 block">{formErrors.status}</span>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Tag</label>
+          <input
+            type="text"
+            name="tag"
+            value={formData.tag}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.tag ? "border-red-500" : "border-gray-300"}`}
+            required
+          />
+          {formErrors.tag && <span className="text-red-500 text-sm mt-1 block">{formErrors.tag}</span>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Current Image</label>
+          <div className="flex gap-4 mt-2 flex-wrap">
+            {existingImage ? (
+              <div className="relative">
+                <img
+                  src={`http://localhost:8080/uploads/${existingImage}`}
+                  alt="Current"
+                  className="w-32 h-32 object-cover rounded-md"
+                  onError={(e) => (e.target.src = "https://via.placeholder.com/128")}
+                />
+                <button
+                  type="button"
+                  onClick={handleDeleteImage}
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700"
+                >
+                  X
+                </button>
+              </div>
+            ) : (
+              <div>No current image</div>
+            )}
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Upload New Image</label>
+          <input
+            type="file"
+            name="file"
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.file ? "border-red-500" : "border-gray-300"}`}
+            accept="image/*"
+          />
+          {formErrors.file && <span className="text-red-500 text-sm mt-1 block">{formErrors.file}</span>}
+        </div>
+        <div className="text-right">
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            disabled={loading}
+          >
+            {loading ? "Updating..." : "Update Progress"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
-
-export default ProgressUpdate;
