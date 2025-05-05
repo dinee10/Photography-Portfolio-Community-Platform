@@ -46,7 +46,7 @@ const BlogCard = ({ blog, index }) => {
   return (
     <Link
       to={`/blog/${blog.id}`}
-      className="flex flex-col md:flex-row bg-white shadow-md rounded-lg overflow-hidden mb-4 transform transition-all duration-300 hover:shadow-xl hover:scale-[1.01] max-w-3xl mx-auto animate-slideUp border-2 border-transparent hover:border-transparent hover:[box-shadow:0_0_10px_2px_rgba(239,68,68,0.5)]"
+      className="flex flex-col md:flex-row bg-white shadow-md rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:scale-[1.01] max-w-3xl mx-auto animate-slideUp border-2 border-transparent hover:border-transparent hover:[box-shadow:0_0_10px_2px_rgba(239,68,68,0.5)]"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
       <div className="md:w-1/2 overflow-hidden">
@@ -79,8 +79,8 @@ const BlogCard = ({ blog, index }) => {
   );
 };
 
-// CategoryBlogCard Component (Used for Wildphotography and Foods)
-const CategoryBlogCard = ({ blog, index, category }) => {
+// CategoryBlogCard Component (Redesigned to match SlideshowBlogCard style)
+const CategoryBlogCard = ({ blog, index }) => {
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
 
@@ -92,45 +92,116 @@ const CategoryBlogCard = ({ blog, index, category }) => {
   const description =
     blog.content.length > 120 ? `${blog.content.substring(0, 120)}...` : blog.content;
 
-  const linkText = `Go to ${category}`;
+  const postedDate = new Date(blog.createdAt || Date.now());
+  const daysAgo = Math.floor((Date.now() - postedDate) / (1000 * 60 * 60 * 24));
+  const metadata = `by ${blog.author || "Unknown Author"} in ${blog.category} • ${
+    daysAgo === 0 ? "Today" : `${daysAgo} day${daysAgo > 1 ? "s" : ""} ago`
+  }`;
 
   return (
     <Link
       to={`/blog/${blog.id}`}
-      className="flex flex-col bg-white shadow-md rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:scale-[1.01] animate-slideUp border-2 border-transparent hover:border-transparent hover:[box-shadow:0_0_10px_2px_rgba(239,68,68,0.5)]"
+      className="flex flex-col bg-white shadow-lg rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-2 border-transparent hover:border-red-200"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
-      <div className="w-full overflow-hidden">
+      {/* Image Section with Overlay Effect */}
+      <div className="relative w-full h-48 overflow-hidden">
         <img
           src={mainImage.includes("base64") ? placeholderImage : mainImage}
           alt={blog.title}
-          className="w-full h-40 object-cover transform transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
           loading="lazy"
           onError={(e) => (e.target.src = placeholderImage)}
         />
-      </div>
-      <div className="p-4 flex flex-col flex-grow">
-        <p className="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-3">
-          <AnimatedText text={description} className="text-gray-600" />
-        </p>
-        <div className="text-red-500 text-sm font-medium flex items-center gap-1 hover:text-red-700 transition duration-300 mt-auto">
-          <AnimatedText text={linkText} className="text-red-500" />
-          <span className="text-red-500">→</span>
+        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
+          <span className="text-white text-lg font-semibold">View Post</span>
         </div>
+      </div>
+      {/* Content Section */}
+      <div className="p-4 flex flex-col">
+        <h3 className="text-xl font-bold text-gray-800 mb-2 leading-tight">
+          <AnimatedText text={blog.title} className="text-gray-800" />
+        </h3>
+        <p className="text-sm text-gray-500 mb-3 animate-fadeIn" style={{ animationDelay: "0.2s" }}>
+          <AnimatedText text={metadata} className="text-gray-500" />
+        </p>
+        <p className="text-base text-gray-700 leading-relaxed mb-4 line-clamp-3">
+          <AnimatedText text={description} className="text-gray-700" />
+        </p>
+        <button className="mt-auto bg-red-500 text-white font-semibold py-2 px-4 rounded-full hover:bg-red-600 transition duration-300 transform hover:scale-105">
+          Read More
+        </button>
       </div>
     </Link>
   );
 };
 
-export default function TourismBlog() {
+// SlideshowBlogCard Component (Used for Foods Slideshow)
+const SlideshowBlogCard = ({ blog }) => {
+  const placeholderImage =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
+
+  const mainImage =
+    Array.isArray(blog.blogImages) && blog.blogImages.length > 0
+      ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
+      : placeholderImage;
+
+  const description =
+    blog.content.length > 120 ? `${blog.content.substring(0, 120)}...` : blog.content;
+
+  const postedDate = new Date(blog.createdAt || Date.now());
+  const daysAgo = Math.floor((Date.now() - postedDate) / (1000 * 60 * 60 * 24));
+  const metadata = `by ${blog.author || "Unknown Author"} in ${blog.category} • ${
+    daysAgo === 0 ? "Today" : `${daysAgo} day${daysAgo > 1 ? "s" : ""} ago`
+  }`;
+
+  return (
+    <Link
+      to={`/blog/${blog.id}`}
+      className="flex flex-col bg-white shadow-lg rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:scale-[1.02] max-w-3xl mx-auto border-2 border-transparent hover:border-red-200"
+    >
+      {/* Image Section with Overlay Effect */}
+      <div className="relative w-full h-64 overflow-hidden">
+        <img
+          src={mainImage.includes("base64") ? placeholderImage : mainImage}
+          alt={blog.title}
+          className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
+          loading="lazy"
+          onError={(e) => (e.target.src = placeholderImage)}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
+          <span className="text-white text-lg font-semibold">View Post</span>
+        </div>
+      </div>
+      {/* Content Section */}
+      <div className="p-6 flex flex-col">
+        <h3 className="text-2xl font-bold text-gray-800 mb-2 leading-tight">
+          <AnimatedText text={blog.title} className="text-gray-800" />
+        </h3>
+        <p className="text-sm text-gray-500 mb-4 animate-fadeIn" style={{ animationDelay: "0.2s" }}>
+          <AnimatedText text={metadata} className="text-gray-500" />
+        </p>
+        <p className="text-base text-gray-700 leading-relaxed mb-4 line-clamp-3">
+          <AnimatedText text={description} className="text-gray-700" />
+        </p>
+        <button className="mt-auto bg-red-500 text-white font-semibold py-2 px-4 rounded-full hover:bg-red-600 transition duration-300 transform hover:scale-105">
+          Read More
+        </button>
+      </div>
+    </Link>
+  );
+};
+
+export default function UserBlog() {
   const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [currentSlide, setCurrentSlide] = useState({});
 
   const placeholderImage =
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAAgAB/1h8KAAAAABJRU5ErkJggg==";
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -148,6 +219,23 @@ export default function TourismBlog() {
     fetchBlogs();
   }, []);
 
+  // Auto-slideshow effect for the Foods category
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => {
+        const filteredBlogs = filterBlogsByCategory("Foods");
+        if (filteredBlogs.length <= 1) return prev; // No auto-slide if 1 or fewer blogs
+        const current = prev["Foods"] || 0;
+        return {
+          ...prev,
+          Foods: current === filteredBlogs.length - 1 ? 0 : current + 1,
+        };
+      });
+    }, 5000); // Slide every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [blogs, searchTerm]); // Re-run if blogs or searchTerm changes
+
   const filterBlogsByCategory = (category) => {
     return blogs.filter(
       (blog) =>
@@ -162,6 +250,28 @@ export default function TourismBlog() {
       ...prev,
       [category]: !prev[category],
     }));
+  };
+
+  const handlePrevSlide = (category) => {
+    setCurrentSlide((prev) => {
+      const filteredBlogs = filterBlogsByCategory(category);
+      const current = prev[category] || 0;
+      return {
+        ...prev,
+        [category]: current === 0 ? filteredBlogs.length - 1 : current - 1,
+      };
+    });
+  };
+
+  const handleNextSlide = (category) => {
+    setCurrentSlide((prev) => {
+      const filteredBlogs = filterBlogsByCategory(category);
+      const current = prev[category] || 0;
+      return {
+        ...prev,
+        [category]: current === filteredBlogs.length - 1 ? 0 : current + 1,
+      };
+    });
   };
 
   const categories = [
@@ -199,11 +309,21 @@ export default function TourismBlog() {
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
           }
+          @keyframes slideFade {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+          .animate-slideFade {
+            animation: slideFade 0.5s ease-out forwards;
+          }
           .animate-slideInWord {
             animation: slideInWord 0.5s ease-out forwards;
           }
           .animate-headerSlide {
             animation: headerSlide 1s ease-out forwards;
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
           }
           html {
             scroll-behavior: smooth;
@@ -428,6 +548,7 @@ export default function TourismBlog() {
           const filteredBlogs = filterBlogsByCategory(category.name);
           const isExpanded = expandedCategories[category.name] || false;
           const displayedBlogs = isExpanded ? filteredBlogs : filteredBlogs.slice(0, category.name === "AI" ? 4 : 4);
+          const currentSlideIndex = currentSlide[category.name] || 0;
 
           return (
             <div key={category.name} id={category.name.toLowerCase()}>
@@ -487,6 +608,57 @@ export default function TourismBlog() {
                       </div>
                     </div>
                   </div>
+                ) : category.name === "Foods" ? (
+                  <div className="relative">
+                    {filteredBlogs.length > 0 ? (
+                      <>
+                        {/* Slideshow Container with Animation */}
+                        <div className="overflow-hidden">
+                          <div
+                            className="flex transition-transform duration-500 ease-in-out"
+                            style={{ transform: `translateX(-${currentSlideIndex * 100}%)` }}
+                          >
+                            {filteredBlogs.map((blog, index) => (
+                              <div
+                                key={blog.id}
+                                className="w-full flex-shrink-0 animate-slideFade"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <SlideshowBlogCard blog={blog} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Navigation Arrows */}
+                        {filteredBlogs.length > 1 && (
+                          <div className="flex justify-between mt-4">
+                            <button
+                              onClick={() => handlePrevSlide(category.name)}
+                              className="text-red-500 hover:text-red-700 transition duration-300"
+                              aria-label="Previous Slide"
+                            >
+                              <ChevronLeft size={32} />
+                            </button>
+                            <button
+                              onClick={() => handleNextSlide(category.name)}
+                              className="text-red-500 hover:text-red-700 transition duration-300"
+                              aria-label="Next Slide"
+                            >
+                              <ChevronRight size={32} />
+                            </button>
+                          </div>
+                        )}
+                        {/* Slide Indicator */}
+                        {filteredBlogs.length > 1 && (
+                          <div className="text-center mt-2 text-sm text-gray-500">
+                            {currentSlideIndex + 1} / {filteredBlogs.length}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-gray-500 text-center">No blogs found in this category.</p>
+                    )}
+                  </div>
                 ) : (
                   <div
                     className={
@@ -504,7 +676,6 @@ export default function TourismBlog() {
                             key={blog.id}
                             blog={blog}
                             index={index}
-                            category={category.name}
                           />
                         )
                       )
@@ -514,7 +685,7 @@ export default function TourismBlog() {
                   </div>
                 )}
 
-                {category.name !== "Fashion" && filteredBlogs.length > 4 && (
+                {category.name !== "Fashion" && category.name !== "Foods" && filteredBlogs.length > 4 && (
                   <div className="text-center mt-6">
                     <button
                       onClick={() => toggleCategoryExpansion(category.name)}
