@@ -327,7 +327,7 @@ export default function UserBlog() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="border-t border-b border-gray-300 flex items-center justify-center py-2 mb-6">
+        <div className="border-t border-b border-gray-900 flex items-center justify-center py-2 mb-6">
           <h2 className="text-xl font-semibold text-gray-800">Video Creator</h2>
         </div>
         {blogs.length >= 5 ? (
