@@ -2,23 +2,16 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
-// Import the logo image (unchanged)
-import logo from "../../assets/Dinitha/logo3.png";
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <nav className="bg-black shadow-md">
       <div className="container mx-auto flex items-center justify-between p-4">
-        {/* Navbar Logo (unchanged) */}
+        {/* Navbar Text (replacing logo) */}
         <div className="text-2xl font-bold">
-          <Link to="/user-blog">
-            <img
-              src={logo}
-              alt="Ceylon Odyssey Logo"
-              className="h-12 w-auto"
-            />
+          <Link to="/user-blog" className="text-red-500 hover:text-red-100 transition duration-300">
+            THEClicK
           </Link>
         </div>
 
