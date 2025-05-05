@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Play, Search } from "lucide-react";
+import { Play, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/Navbar/Navbar";
@@ -79,7 +79,7 @@ const BlogCard = ({ blog, index }) => {
   );
 };
 
-// CategoryBlogCard Component (Redesigned to match SlideshowBlogCard style)
+// CategoryBlogCard Component (Used for Non-AI Sections, including Foods)
 const CategoryBlogCard = ({ blog, index }) => {
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
@@ -136,7 +136,7 @@ const CategoryBlogCard = ({ blog, index }) => {
   );
 };
 
-// SlideshowBlogCard Component (Used for Foods Slideshow)
+// SlideshowBlogCard Component (Kept for potential future use)
 const SlideshowBlogCard = ({ blog }) => {
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
@@ -198,7 +198,6 @@ export default function UserBlog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedCategories, setExpandedCategories] = useState({});
-  const [currentSlide, setCurrentSlide] = useState({});
 
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
@@ -219,23 +218,6 @@ export default function UserBlog() {
     fetchBlogs();
   }, []);
 
-  // Auto-slideshow effect for the Foods category
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => {
-        const filteredBlogs = filterBlogsByCategory("Foods");
-        if (filteredBlogs.length <= 1) return prev; // No auto-slide if 1 or fewer blogs
-        const current = prev["Foods"] || 0;
-        return {
-          ...prev,
-          Foods: current === filteredBlogs.length - 1 ? 0 : current + 1,
-        };
-      });
-    }, 5000); // Slide every 5 seconds
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [blogs, searchTerm]); // Re-run if blogs or searchTerm changes
-
   const filterBlogsByCategory = (category) => {
     return blogs.filter(
       (blog) =>
@@ -250,28 +232,6 @@ export default function UserBlog() {
       ...prev,
       [category]: !prev[category],
     }));
-  };
-
-  const handlePrevSlide = (category) => {
-    setCurrentSlide((prev) => {
-      const filteredBlogs = filterBlogsByCategory(category);
-      const current = prev[category] || 0;
-      return {
-        ...prev,
-        [category]: current === 0 ? filteredBlogs.length - 1 : current - 1,
-      };
-    });
-  };
-
-  const handleNextSlide = (category) => {
-    setCurrentSlide((prev) => {
-      const filteredBlogs = filterBlogsByCategory(category);
-      const current = prev[category] || 0;
-      return {
-        ...prev,
-        [category]: current === filteredBlogs.length - 1 ? 0 : current + 1,
-      };
-    });
   };
 
   const categories = [
@@ -308,13 +268,6 @@ export default function UserBlog() {
           @keyframes headerSlide {
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
-          }
-          @keyframes slideFade {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-          }
-          .animate-slideFade {
-            animation: slideFade 0.5s ease-out forwards;
           }
           .animate-slideInWord {
             animation: slideInWord 0.5s ease-out forwards;
@@ -547,8 +500,7 @@ export default function UserBlog() {
         categories.map((category) => {
           const filteredBlogs = filterBlogsByCategory(category.name);
           const isExpanded = expandedCategories[category.name] || false;
-          const displayedBlogs = isExpanded ? filteredBlogs : filteredBlogs.slice(0, category.name === "AI" ? 4 : 4);
-          const currentSlideIndex = currentSlide[category.name] || 0;
+          const displayedBlogs = isExpanded ? filteredBlogs : filteredBlogs.slice(0, category.name === "AI" ? 4 : category.name === "Foods" ? 3 : 4);
 
           return (
             <div key={category.name} id={category.name.toLowerCase()}>
@@ -609,54 +561,27 @@ export default function UserBlog() {
                     </div>
                   </div>
                 ) : category.name === "Foods" ? (
-                  <div className="relative">
-                    {filteredBlogs.length > 0 ? (
-                      <>
-                        {/* Slideshow Container with Animation */}
-                        <div className="overflow-hidden">
-                          <div
-                            className="flex transition-transform duration-500 ease-in-out"
-                            style={{ transform: `translateX(-${currentSlideIndex * 100}%)` }}
-                          >
-                            {filteredBlogs.map((blog, index) => (
-                              <div
-                                key={blog.id}
-                                className="w-full flex-shrink-0 animate-slideFade"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                              >
-                                <SlideshowBlogCard blog={blog} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Navigation Arrows */}
-                        {filteredBlogs.length > 1 && (
-                          <div className="flex justify-between mt-4">
-                            <button
-                              onClick={() => handlePrevSlide(category.name)}
-                              className="text-red-500 hover:text-red-700 transition duration-300"
-                              aria-label="Previous Slide"
-                            >
-                              <ChevronLeft size={32} />
-                            </button>
-                            <button
-                              onClick={() => handleNextSlide(category.name)}
-                              className="text-red-500 hover:text-red-700 transition duration-300"
-                              aria-label="Next Slide"
-                            >
-                              <ChevronRight size={32} />
-                            </button>
-                          </div>
-                        )}
-                        {/* Slide Indicator */}
-                        {filteredBlogs.length > 1 && (
-                          <div className="text-center mt-2 text-sm text-gray-500">
-                            {currentSlideIndex + 1} / {filteredBlogs.length}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-gray-500 text-center">No blogs found in this category.</p>
+                  <div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {filteredBlogs.length > 0 ? (
+                        filteredBlogs.slice(0, 3).map((blog, index) => (
+                          <CategoryBlogCard key={blog.id} blog={blog} index={index} />
+                        ))
+                      ) : (
+                        <p className="text-gray-500 col-span-3 text-center">
+                          No blogs found in this category.
+                        </p>
+                      )}
+                    </div>
+                    {filteredBlogs.length > 3 && (
+                      <div className="text-center mt-6">
+                        <button
+                          onClick={() => toggleCategoryExpansion(category.name)}
+                          className="text-red-500 border border-red-700 rounded-full px-6 py-2 text-sm font-medium hover:bg-red-500 hover:text-white transition duration-300"
+                        >
+                          {isExpanded ? "See Less" : "See More"}
+                        </button>
+                      </div>
                     )}
                   </div>
                 ) : (
@@ -672,11 +597,7 @@ export default function UserBlog() {
                         category.name === "AI" ? (
                           <BlogCard key={blog.id} blog={blog} index={index} />
                         ) : (
-                          <CategoryBlogCard
-                            key={blog.id}
-                            blog={blog}
-                            index={index}
-                          />
+                          <CategoryBlogCard key={blog.id} blog={blog} index={index} />
                         )
                       )
                     ) : (
