@@ -32,7 +32,7 @@ const Login = () => {
         localStorage.setItem('userId', response.data.id);
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate('/admin');
         }, 1500);
       } else {
         setError('Invalid credentials');
