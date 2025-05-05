@@ -35,7 +35,7 @@ function SideMenu() {
                         style: { marginBottom: '15px' }
                     },
                     {
-                        label: "Activities",
+                        label: "Learning Plan",
                         icon: <ProductOutlined />,
                         key: '#',
                         style: { marginBottom: '15px' }
