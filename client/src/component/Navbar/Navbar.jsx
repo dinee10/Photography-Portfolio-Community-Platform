@@ -2,37 +2,65 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
-// Update the path to your logo file
+// Import the logo image (unchanged)
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed z-50 bg-white rounded-full shadow-lg top-5 left-10 right-10">
-      <div className="container flex items-center justify-between p-4 mx-auto">
-        {/* Navbar Logo */}
+    <nav className="bg-black shadow-md">
+      <div className="container mx-auto flex items-center justify-between p-4">
+        {/* Navbar Logo (unchanged) */}
         <div className="text-2xl font-bold">
+          <Link to="/progresslist">
           
+          </Link>
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex flex-1 justify-center space-x-8">
-          <Link to="#" className="text-gray-700 hover:text-blue-600 transition duration-300">
-            Home
+        <div className="hidden md:flex flex-1 justify-center space-x-6">
+          <div className="relative group">
+            <Link to="/features" className="text-red-500 hover:text-red-100 transition duration-300 flex items-center">
+              Features
+              <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </Link>
+            {/* Dropdown placeholder (not functional) */}
+            <div className="absolute hidden group-hover:block bg-white shadow-md rounded-md mt-2 p-2">
+              <Link to="/features/sub1" className="block px-4 py-2 text-red-700 hover:bg-gray-100">Sub Feature 1</Link>
+              <Link to="/features/sub2" className="block px-4 py-2 text-red-700 hover:bg-gray-100">Sub Feature 2</Link>
+            </div>
+          </div>
+          <div className="relative group">
+            <Link to="/channels" className="text-red-500 hover:text-red-100 transition duration-300 flex items-center">
+              Channels
+              <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </Link>
+            {/* Dropdown placeholder (not functional) */}
+            <div className="absolute hidden group-hover:block bg-white shadow-md rounded-md mt-2 p-2">
+              <Link to="/channels/sub1" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Sub Channel 1</Link>
+              <Link to="/channels/sub2" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Sub Channel 2</Link>
+            </div>
+          </div>
+          <Link to="/pricing" className="text-red-500 hover:text-red-100 transition duration-300">
+            Pricing
           </Link>
-          <Link to="#" className="text-gray-700 hover:text-blue-600 transition duration-300">
-            Hotels
-          </Link>
-          
-          <Link to="#" className="text-gray-700 hover:text-blue-900 transition duration-300">
-            Tasks
+          <Link to="/blog" className="text-red-500 hover:text-red-100 transition duration-300">
+            Blog
           </Link>
         </div>
 
         {/* Buttons */}
         <div className="hidden md:flex items-center space-x-4">
-          <Link to="/login" className="text-blue-900 px-4 py-2 rounded-full hover:bg-gray-300 transition duration-300">
-            Sign In
+          <Link to="/login" className="text-gray-100 hover:text-red-600 transition duration-300">
+            Log in
+          </Link>
+          <Link to="/register" className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-700 transition duration-300">
+            Get started now
           </Link>
         </div>
 
@@ -47,14 +75,14 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-md rounded-lg mt-2 p-4 absolute top-16 left-10 right-10 z-50">
-          <Link to="#" className="block text-gray-700 py-2 hover:text-blue-600">About</Link>
-          <Link to="#" className="block text-gray-700 py-2 hover:text-blue-600">Contact</Link>
-          <Link to="#" className="block text-gray-700 py-2 hover:text-blue-600">Blog</Link>
-          <Link to="#" className="block text-gray-700 py-2 hover:text-blue-600">Destinations</Link>
+        <div className="md:hidden bg-white shadow-md p-4">
+          <Link to="/features" className="block text-gray-900 py-2 hover:text-red-600">Features</Link>
+          <Link to="/channels" className="block text-gray-900 py-2 hover:text-red-600">Channels</Link>
+          <Link to="/pricing" className="block text-gray-900 py-2 hover:text-red-600">Pricing</Link>
+          <Link to="/blog" className="block text-gray-900 py-2 hover:text-red-600">Blog</Link>
           <div className="mt-4">
-            <Link to="#" className="block text-blue-600 py-2 hover:bg-gray-300 rounded-lg text-center">Sign In</Link>
-            <Link to="/register" className="block bg-blue-600 text-white py-2 mt-2 rounded-lg text-center hover:bg-blue-700">Sign Up</Link>
+            <Link to="/login" className="block text-gray-900 py-2 hover:bg-gray-300 rounded-lg text-center">Log in</Link>
+            <Link to="/register" className="block bg-red-600 text-white py-2 mt-2 rounded-lg text-center hover:bg-red-700">Get started now</Link>
           </div>
         </div>
       )}
