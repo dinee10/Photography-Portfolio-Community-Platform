@@ -1,30 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
-const ProgressList = () => {
+function ProgressL() {
   const [progressList, setProgressList] = useState([]);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8080/progress')
-      .then((response) => {
-        setProgressList(response.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching progress data:', error);
-      });
+    fetchProgress();
   }, []);
 
-  const handleUpdate = (id) => {
-    navigate(`/update/${id}`);
+  const fetchProgress = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/progress');
+      setProgressList(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching progress data:', err);
+      setError('Failed to load progress data. Please try again later.');
+      setLoading(false);
+    }
   };
 
-  const handleDelete = async (id) => {
-    // Replace window.confirm with Swal.fire
+  const deleteProgress = async (id) => {
     Swal.fire({
       title: 'Are you sure?',
       text: 'Do you want to delete this progress item?',
@@ -37,19 +38,22 @@ const ProgressList = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:8080/progress/${id}`);
-          setProgressList(progressList.filter((progress) => progress.id !== id));
+          const res = await axios.delete(`http://localhost:8080/progress/${id}`);
           Swal.fire({
             title: 'Deleted!',
-            text: 'Progress item deleted successfully!',
+            text: res.data.message || 'Progress item deleted successfully!',
             icon: 'success',
             confirmButtonText: 'OK',
           });
+          setDeleteError(null);
+          fetchProgress();
         } catch (error) {
           console.error('Error deleting progress item:', error);
+          const errorMessage = error.response?.data?.message || 'Progress deletion failed. Please try again.';
+          setDeleteError(errorMessage);
           Swal.fire({
             title: 'Error!',
-            text: 'Failed to delete progress item.',
+            text: errorMessage,
             icon: 'error',
             confirmButtonText: 'OK',
           });
@@ -58,67 +62,83 @@ const ProgressList = () => {
     });
   };
 
+  if (loading) {
+    return <div className="text-white text-center mt-20">Loading progress...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center mt-20">{error}</div>;
+  }
+
   return (
-    <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Progress Details</h2>
-        <button
-          className="btn btn-success"
-          onClick={() => navigate('/addprogress')}
-        >
-          Add Progress
-        </button>
+    <section className="max-w-7xl p-6 mx-auto bg-gray-700 rounded-md shadow-md dark:bg-gray-800 mt-20">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-4xl font-bold text-white capitalize dark:text-white">Progress List</h1>
+       
       </div>
 
-      {progressList.length === 0 ? (
-        <p>No data available.</p>
-      ) : (
-        <div className="row">
-          {progressList.map((progress) => (
-            <div key={progress.id} className="col-md-4 mb-4">
-              <div className="card">
-                <div className="card-body">
-                  <h3 className="card-title">{progress.name}</h3>
-                  <p className="card-text"><strong>Topic:</strong> {progress.topic}</p>
-                  <p className="card-text"><strong>Description:</strong> {progress.description}</p>
-                  <p className="card-text"><strong>Status:</strong> {progress.status}</p>
-                  <p className="card-text"><strong>Tag:</strong> {progress.tag}</p>
-                  {progress.image && (
-                    <img
-                      src={`http://localhost:8080/uploads/${progress.image}`}
-                      alt={progress.name}
-                      className="img-fluid mt-3"
-                      style={{ pointerEvents: 'none' }}
-                    />
-                  )}
-                  <p className="text-muted mt-2">
-                    <small>Created At: {new Date(progress.createdAt).toLocaleString()}</small>
-                  </p>
-                  <div className="d-flex gap-2 mt-3">
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => handleUpdate(progress.id)}
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(progress.id);
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+      {deleteError && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+          {deleteError}
         </div>
       )}
-    </div>
-  );
-};
 
-export default ProgressList;
+      <div className="space-y-6">
+        {progressList.length === 0 ? (
+          <p className="text-white">No progress data available.</p>
+        ) : (
+          progressList.map((progress) => (
+            <div
+              key={progress.id}
+              className="flex items-start p-4 bg-white rounded-md shadow-md dark:bg-gray-800"
+            >
+              <div className="flex-shrink-0 mr-4">
+                {progress.image ? (
+                  <img
+                    src={`http://localhost:8080/uploads/${progress.image}`}
+                    alt={progress.name}
+                    className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                    onError={(e) => (e.target.src = 'https://via.placeholder.com/128')}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                ) : (
+                  <div className="w-32 h-32 bg-gray-200 rounded-md flex items-center justify-center">
+                    No Image
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">{progress.name}</h2>
+                <p className="text-gray-600 dark:text-gray-300">Topic: {progress.topic}</p>
+                <p className="text-gray-600 dark:text-gray-400 mt-2 line-clamp-3">
+                  {progress.description.length > 100 ? `${progress.description.substring(0, 100)}...` : progress.description}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400">Status: {progress.status}</p>
+                <p className="text-gray-600 dark:text-gray-400">Tag: {progress.tag}</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Created At: {new Date(progress.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex items-center space-x-4 ml-4">
+                <button
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+                  onClick={() => deleteProgress(progress.id)}
+                >
+                  Delete
+                </button>
+                <Link
+                  to={`/update/${progress.id}`}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                >
+                  Update
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+export default ProgressL;
