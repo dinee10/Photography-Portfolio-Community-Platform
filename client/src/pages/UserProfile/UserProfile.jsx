@@ -1,94 +1,123 @@
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
-const UserProfile = () => {
+function UserProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-
-    if (!userId) {
-      setError('User not found');
-      setLoading(false);
-      return;
-    }
-
-    axios
-      .get(`http://localhost:8080/user/${userId}`)
-      .then((response) => {
-        setUser(response.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Error fetching data');
-        setLoading(false);
-      });
+    fetchUser();
   }, []);
 
-  const UpdateNavigate = (id) => {
-    window.location.href = `/updateprofile/${id}`;
+  const fetchUser = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User not found');
+      }
+      const res = await axios.get(`http://localhost:8080/user/${userId}`);
+      setUser(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+      setError('Failed to load user data. Please try again later.');
+      setLoading(false);
+    }
   };
 
   const deleteAccount = async () => {
-    const confirmation = window.confirm('Are you sure you want to delete this account?');
-    if (confirmation) {
-      try {
-        await axios.delete(`http://localhost:8080/user/${user.id}`);
-        alert('Account deleted successfully');
-        localStorage.removeItem('userId');
-        window.location.href = '/';
-      } catch (error) {
-        alert('Error deleting account');
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this account?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axios.delete(`http://localhost:8080/user/${user.id}`);
+          Swal.fire({
+            title: 'Deleted!',
+            text: res.data.message || 'Account deleted successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+          }).then(() => {
+            localStorage.removeItem('userId');
+            window.location.href = '/';
+          });
+          setDeleteError(null);
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          const errorMessage = error.response?.data?.message || 'Account deletion failed. Please try again.';
+          setDeleteError(errorMessage);
+          Swal.fire({
+            title: 'Error!',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        }
       }
-    }
+    });
   };
 
-  if (loading) return <p className="pl-4 pt-4 text-gray-600">Loading...</p>;
-  if (error) return <p className="pl-4 pt-4 text-red-600">{error}</p>;
+  if (loading) {
+    return <div className="text-white text-center mt-20">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center mt-20">{error}</div>;
+  }
 
   return (
-    <div className="min-h-screen flex items-center bg-gray-50 px-4">
-      <div className="bg-white shadow-lg rounded-xl p-8 max-w-sm w-full mx-auto">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">User Profile</h2>
+    <section className="max-w-7xl p-6 mx-auto bg-gray-700 rounded-md shadow-md dark:bg-gray-800 mt-20">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-4xl font-bold text-white capitalize dark:text-white">User Profile</h1>
+      </div>
 
-        {user ? (
-          <div className="space-y-4">
-            <div className="bg-gray-100 border border-gray-200 rounded-md p-4 text-gray-700">
-              <strong>Full Name:</strong> {user.fullname}
-            </div>
-            <div className="bg-gray-100 border border-gray-200 rounded-md p-4 text-gray-700">
-              <strong>Email:</strong> {user.email}
-            </div>
-            <div className="bg-gray-100 border border-gray-200 rounded-md p-4 text-gray-700">
-              <strong>Password:</strong> {user.password}
-            </div>
-            <div className="bg-gray-100 border border-gray-200 rounded-md p-4 text-gray-700">
-              <strong>Phone:</strong> {user.phone}
-            </div>
+      {deleteError && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+          {deleteError}
+        </div>
+      )}
 
-            <div className="flex gap-4 mt-4">
+      <div className="space-y-6">
+        {!user ? (
+          <p className="text-white">No user data available.</p>
+        ) : (
+          <div className="flex items-start p-4 bg-white rounded-md shadow-md dark:bg-gray-800">
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">{user.fullname}</h2>
+              <p className="text-gray-600 dark:text-gray-300">Email: {user.email}</p>
+              <p className="text-gray-600 dark:text-gray-400">Phone: {user.phone}</p>
+              <p className="text-gray-600 dark:text-gray-400">Password: {user.password}</p>
+            </div>
+            <div className="flex items-center space-x-4 ml-4">
               <button
-                onClick={() => UpdateNavigate(user.id)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition"
-              >
-                Update
-              </button>
-              <button
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
                 onClick={deleteAccount}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition"
               >
                 Delete
               </button>
+              <Link
+                to={`/updateprofile/${user.id}`}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+              >
+                Update
+              </Link>
             </div>
           </div>
-        ) : (
-          <p className="text-gray-500">No user found</p>
         )}
       </div>
-    </div>
+    </section>
   );
-};
+}
 
 export default UserProfile;
