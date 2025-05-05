@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import image1 from "../../assets/Dinitha/general1.jpg"; // Author image
+import image1 from "../../assets/Dinitha/me.jpg"; // Author image
 
 // Component to animate individual words with spacing
 const AnimatedText = ({ text, className }) => {
