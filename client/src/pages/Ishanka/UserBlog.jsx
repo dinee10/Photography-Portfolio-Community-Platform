@@ -208,8 +208,6 @@ export default function UserBlog() {
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen">
-      
-
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <div className="relative text-white h-[600px] bg-black">
@@ -296,6 +294,37 @@ export default function UserBlog() {
           </p>
         </div>
       </div>
+
+      <div className="container mx-auto px-4 py-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <div>
+      <h2 className="text-4xl font-bold text-gray-900 mb-4">My Journey</h2>
+      <p className="text-gray-700 leading-relaxed mb-6">
+        From a young age, I've always had an affinity for fixing things, whether it was simple household repairs or creating something from scratch. This fascination led me to pursue formal training in various trades, including carpentry, electrical work, plumbing, and more. Over the years, I've had the privilege of working on diverse projects, from minor repairs to full-scale renovations, which has helped me develop a versatile skill set.
+        <br /><br />
+        What started as a personal hobby soon evolved into a full-time profession, and I've built my business around the belief that every job deserves precision, care, and professionalism. I pride myself on being the go-to handyman you can trust to handle any job with skill and efficiency.
+      </p>
+      <Link
+        to="/hire-me"
+        className="inline-block bg-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-orange-600 transition duration-300"
+      >
+        Hire Me
+      </Link>
+    </div>
+    <div>
+      <img
+        src="/assets/author-image.jpg" // Update this path to match your image name
+        alt="Author"
+        className="w-full h-96 object-cover rounded-lg shadow-md"
+        loading="lazy"
+        onError={(e) => {
+          e.target.src =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
+        }}
+      />
+    </div>
+  </div>
+</div>
 
       <div className="container mx-auto px-4 py-8">
         <div className="border-t border-b border-gray-300 flex items-center justify-center py-2 mb-6">
