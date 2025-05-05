@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Play, Search } from "lucide-react";
+import { Play, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/Navbar/Navbar";
@@ -17,7 +17,7 @@ const AnimatedText = ({ text, className }) => {
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           {word}
-          {index < words.length - 1 ? " " : ""} {/* Add space after words except the last */}
+          {index < words.length - 1 ? " " : ""}
         </span>
       ))}
     </span>
@@ -79,7 +79,7 @@ const BlogCard = ({ blog, index }) => {
   );
 };
 
-// CategoryBlogCard Component (Used for Non-AI Sections, including Foods)
+// CategoryBlogCard Component (Used for Non-AI Sections)
 const CategoryBlogCard = ({ blog, index }) => {
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
@@ -104,7 +104,6 @@ const CategoryBlogCard = ({ blog, index }) => {
       className="flex flex-col bg-white shadow-lg rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-2 border-transparent hover:border-red-200"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
-      {/* Image Section with Overlay Effect */}
       <div className="relative w-full h-48 overflow-hidden">
         <img
           src={mainImage.includes("base64") ? placeholderImage : mainImage}
@@ -117,68 +116,11 @@ const CategoryBlogCard = ({ blog, index }) => {
           <span className="text-white text-lg font-semibold">View Post</span>
         </div>
       </div>
-      {/* Content Section */}
       <div className="p-4 flex flex-col">
         <h3 className="text-xl font-bold text-gray-800 mb-2 leading-tight">
           <AnimatedText text={blog.title} className="text-gray-800" />
         </h3>
         <p className="text-sm text-gray-500 mb-3 animate-fadeIn" style={{ animationDelay: "0.2s" }}>
-          <AnimatedText text={metadata} className="text-gray-500" />
-        </p>
-        <p className="text-base text-gray-700 leading-relaxed mb-4 line-clamp-3">
-          <AnimatedText text={description} className="text-gray-700" />
-        </p>
-        <button className="mt-auto bg-red-500 text-white font-semibold py-2 px-4 rounded-full hover:bg-red-600 transition duration-300 transform hover:scale-105">
-          Read More
-        </button>
-      </div>
-    </Link>
-  );
-};
-
-// SlideshowBlogCard Component (Kept for potential future use)
-const SlideshowBlogCard = ({ blog }) => {
-  const placeholderImage =
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
-
-  const mainImage =
-    Array.isArray(blog.blogImages) && blog.blogImages.length > 0
-      ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
-      : placeholderImage;
-
-  const description =
-    blog.content.length > 120 ? `${blog.content.substring(0, 120)}...` : blog.content;
-
-  const postedDate = new Date(blog.createdAt || Date.now());
-  const daysAgo = Math.floor((Date.now() - postedDate) / (1000 * 60 * 60 * 24));
-  const metadata = `by ${blog.author || "Unknown Author"} in ${blog.category} • ${
-    daysAgo === 0 ? "Today" : `${daysAgo} day${daysAgo > 1 ? "s" : ""} ago`
-  }`;
-
-  return (
-    <Link
-      to={`/blog/${blog.id}`}
-      className="flex flex-col bg-white shadow-lg rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:scale-[1.02] max-w-3xl mx-auto border-2 border-transparent hover:border-red-200"
-    >
-      {/* Image Section with Overlay Effect */}
-      <div className="relative w-full h-64 overflow-hidden">
-        <img
-          src={mainImage.includes("base64") ? placeholderImage : mainImage}
-          alt={blog.title}
-          className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
-          loading="lazy"
-          onError={(e) => (e.target.src = placeholderImage)}
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
-          <span className="text-white text-lg font-semibold">View Post</span>
-        </div>
-      </div>
-      {/* Content Section */}
-      <div className="p-6 flex flex-col">
-        <h3 className="text-2xl font-bold text-gray-800 mb-2 leading-tight">
-          <AnimatedText text={blog.title} className="text-gray-800" />
-        </h3>
-        <p className="text-sm text-gray-500 mb-4 animate-fadeIn" style={{ animationDelay: "0.2s" }}>
           <AnimatedText text={metadata} className="text-gray-500" />
         </p>
         <p className="text-base text-gray-700 leading-relaxed mb-4 line-clamp-3">
@@ -198,6 +140,8 @@ export default function UserBlog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [currentFoodIndex, setCurrentFoodIndex] = useState(0);
+  const [foodDirection, setFoodDirection] = useState('right');
 
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
@@ -206,7 +150,6 @@ export default function UserBlog() {
     const fetchBlogs = async () => {
       try {
         const response = await axios.get("http://localhost:5000/blog");
-        console.log("Fetched blogs:", response.data);
         setBlogs(response.data);
       } catch (err) {
         setError("Failed to fetch blogs. Please try again later.");
@@ -217,6 +160,18 @@ export default function UserBlog() {
     };
     fetchBlogs();
   }, []);
+
+  // Auto-rotate food carousel
+  useEffect(() => {
+    const foodBlogs = filterBlogsByCategory("Foods");
+    if (foodBlogs.length > 1) {
+      const interval = setInterval(() => {
+        setFoodDirection('right');
+        setCurrentFoodIndex(prev => (prev + 1) % foodBlogs.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [blogs, currentFoodIndex]);
 
   const filterBlogsByCategory = (category) => {
     return blogs.filter(
@@ -232,6 +187,16 @@ export default function UserBlog() {
       ...prev,
       [category]: !prev[category],
     }));
+  };
+
+  const nextFoodSlide = () => {
+    setFoodDirection('right');
+    setCurrentFoodIndex(prev => (prev + 1) % filterBlogsByCategory("Foods").length);
+  };
+
+  const prevFoodSlide = () => {
+    setFoodDirection('left');
+    setCurrentFoodIndex(prev => (prev - 1 + filterBlogsByCategory("Foods").length) % filterBlogsByCategory("Foods").length);
   };
 
   const categories = [
@@ -286,11 +251,9 @@ export default function UserBlog() {
 
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      {/* Header Section with Black Background and Slide Animation */}
       <div className="relative text-white h-[600px] bg-black">
         <div className="relative container mx-auto px-4 h-full flex items-center">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-headerSlide">
-            {/* Left Column: Text and Button */}
             <div className="flex flex-col justify-center">
               <p className="text-sm uppercase text-gray-300 mb-2" style={{ animationDelay: "0s" }}>
                 Designed & Built for
@@ -309,7 +272,6 @@ export default function UserBlog() {
                 Get Started →
               </Link>
             </div>
-            {/* Right Column: Mini-Gallery Preview */}
             <div className="flex items-center">
               <div className="grid grid-cols-2 gap-2 w-full">
                 {blogs.slice(0, 4).map((blog, index) => (
@@ -345,7 +307,6 @@ export default function UserBlog() {
         </div>
       </div>
 
-      {/* Search Bar Section */}
       <div className="container mx-auto px-4 py-6">
         <div className="relative w-full max-w-md mx-auto">
           <input
@@ -361,7 +322,6 @@ export default function UserBlog() {
         </div>
       </div>
 
-      {/* Welcome Note Section with Word Animation */}
       <div className="container mx-auto px-4 py-8">
         <div className="bg-red-500 rounded-lg shadow-md p-6 text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -376,7 +336,6 @@ export default function UserBlog() {
         </div>
       </div>
 
-      {/* Video Creator Section */}
       <div className="container mx-auto px-4 py-8">
         <div className="border-t border-b border-gray-300 flex items-center justify-center py-2 mb-6">
           <h2 className="text-xl font-semibold text-gray-800">Video Creator</h2>
@@ -470,7 +429,6 @@ export default function UserBlog() {
         )}
       </div>
 
-      {/* Category Navigation */}
       <div className="container mx-auto px-4 py-4 bg-red-500 border-b border-gray-200">
         <nav className="flex flex-wrap gap-4">
           {categories.map((category) => (
@@ -487,7 +445,6 @@ export default function UserBlog() {
         </nav>
       </div>
 
-      {/* Category Sections */}
       {loading ? (
         <div className="text-center py-8">
           <p className="text-purple-900 text-lg">Loading blogs...</p>
@@ -561,26 +518,97 @@ export default function UserBlog() {
                     </div>
                   </div>
                 ) : category.name === "Foods" ? (
-                  <div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="relative">
+                    {filteredBlogs.length > 1 && (
+                      <>
+                        <button 
+                          onClick={prevFoodSlide}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transform -translate-x-4 hover:scale-110 transition-all"
+                          aria-label="Previous food blog"
+                        >
+                          <ChevronLeft size={24} />
+                        </button>
+                        <button 
+                          onClick={nextFoodSlide}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transform translate-x-4 hover:scale-110 transition-all"
+                          aria-label="Next food blog"
+                        >
+                          <ChevronRight size={24} />
+                        </button>
+                      </>
+                    )}
+
+                    <div className="overflow-hidden relative h-[500px] rounded-xl shadow-lg bg-white">
                       {filteredBlogs.length > 0 ? (
-                        filteredBlogs.slice(0, 3).map((blog, index) => (
-                          <CategoryBlogCard key={blog.id} blog={blog} index={index} />
+                        filteredBlogs.map((blog, index) => (
+                          <div
+                            key={blog.id}
+                            className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentFoodIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            style={{
+                              transform: `translateX(${
+                                index === currentFoodIndex 
+                                  ? 0 
+                                  : index < currentFoodIndex 
+                                    ? (foodDirection === 'right' ? '-100%' : '100%')
+                                    : (foodDirection === 'right' ? '100%' : '-100%')
+                              })`
+                            }}
+                          >
+                            <div className="flex flex-col md:flex-row h-full">
+                              <div className="md:w-1/2 h-full overflow-hidden">
+                                <img
+                                  src={
+                                    blog.blogImages && blog.blogImages.length > 0
+                                      ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
+                                      : placeholderImage
+                                  }
+                                  alt={blog.title}
+                                  className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
+                                  loading="lazy"
+                                  onError={(e) => (e.target.src = placeholderImage)}
+                                />
+                              </div>
+                              
+                              <div className="md:w-1/2 p-8 flex flex-col justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+                                <h3 className="text-3xl font-bold text-gray-800 mb-4">
+                                  {blog.title}
+                                </h3>
+                                <p className="text-sm text-gray-500 mb-4">
+                                  by {blog.author || "Unknown Author"} • {new Date(blog.createdAt).toLocaleDateString()}
+                                </p>
+                                <p className="text-gray-700 mb-6 line-clamp-4">
+                                  {blog.content.length > 300 ? `${blog.content.substring(0, 300)}...` : blog.content}
+                                </p>
+                                <Link
+                                  to={`/blog/${blog.id}`}
+                                  className="inline-block bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-full transition duration-300 self-start"
+                                >
+                                  Read Recipe
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
                         ))
                       ) : (
-                        <p className="text-gray-500 col-span-3 text-center">
-                          No blogs found in this category.
-                        </p>
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-gray-500">No food blogs found.</p>
+                        </div>
                       )}
                     </div>
-                    {filteredBlogs.length > 3 && (
-                      <div className="text-center mt-6">
-                        <button
-                          onClick={() => toggleCategoryExpansion(category.name)}
-                          className="text-red-500 border border-red-700 rounded-full px-6 py-2 text-sm font-medium hover:bg-red-500 hover:text-white transition duration-300"
-                        >
-                          {isExpanded ? "See Less" : "See More"}
-                        </button>
+
+                    {filteredBlogs.length > 1 && (
+                      <div className="flex justify-center mt-4 space-x-2">
+                        {filteredBlogs.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setFoodDirection(index > currentFoodIndex ? 'right' : 'left');
+                              setCurrentFoodIndex(index);
+                            }}
+                            className={`w-3 h-3 rounded-full transition-all ${index === currentFoodIndex ? 'bg-red-500 w-6' : 'bg-gray-300'}`}
+                            aria-label={`Go to slide ${index + 1}`}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
