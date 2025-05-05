@@ -323,7 +323,7 @@ export default function UserBlog() {
               alt="Portrait of the author"
               width="600"
               height="384"
-              className="w-full h-96 object-cover rounded-lg shadow-md border border-gray-800"
+              className="w-full h-96 object-cover rounded-lg shadow-md border border-black"
               loading="lazy"
               onError={(e) => (e.target.src = placeholderImage)}
             />
