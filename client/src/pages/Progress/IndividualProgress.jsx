@@ -1,37 +1,43 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
-
-// Adjust to your logo path
-// Import Swiper styles and components
-
 
 export default function IndividualProgress() {
   const { id } = useParams();
   const [progress, setProgress] = useState({});
   const [error, setError] = useState("");
-  const [isSpeaking, setIsSpeaking] = useState(false); // Track if speech is active
-  const [isPaused, setIsPaused] = useState(false); // Track if speech is paused
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const navigate = useNavigate();
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
+    if (!userId) {
+      setError("You must be logged in to view progress.");
+      navigate('/login');
+      return;
+    }
+
     if (!id) {
       setError("No progress ID provided");
       return;
     }
+
     axios
-      .get(`http://localhost:8080/progress/${id}`)
+      .get(`http://localhost:8080/progress/update/${id}`, {
+        params: { userId }
+      })
       .then((res) => {
         console.log("Progress data fetched:", res.data);
         setProgress(res.data);
       })
       .catch((err) => {
         console.error("Error fetching progress:", err);
-        setError("Failed to fetch progress. Please try again later.");
+        setError(err.response?.data?.message || "Failed to fetch progress. Please try again later.");
       });
-  }, [id]);
+  }, [id, userId, navigate]);
 
-  // Speech Synthesis Functions
   const startSpeech = () => {
     if (!window.speechSynthesis) {
       alert("Your browser does not support speech synthesis.");
@@ -39,7 +45,7 @@ export default function IndividualProgress() {
     }
 
     if (isSpeaking && !isPaused) {
-      return; // Prevent starting new speech while speaking
+      return;
     }
 
     const utterance = new SpeechSynthesisUtterance();
@@ -48,21 +54,21 @@ export default function IndividualProgress() {
     }. Status: ${progress.status || "Unknown"}. Tag: ${progress.tag || "None"}.`;
     utterance.text = textToSpeak;
     utterance.lang = "en-US";
-    utterance.rate = 1.0; // Normal speed
-    utterance.pitch = 1.0; // Normal pitch
-    utterance.volume = 1.0; // Full volume
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
 
     utterance.onend = () => {
       setIsSpeaking(false);
       setIsPaused(false);
-      window.speechSynthesis.cancel(); // Clear the queue
+      window.speechSynthesis.cancel();
     };
 
     if (isPaused) {
       window.speechSynthesis.resume();
       setIsPaused(false);
     } else {
-      window.speechSynthesis.cancel(); // Clear any previous speech
+      window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
       setIsSpeaking(true);
       setIsPaused(false);
@@ -103,7 +109,7 @@ export default function IndividualProgress() {
             console.error(`Image load attempt ${retries + 1} failed for ${url}:`, error);
             if (retries < maxRetries) {
               retries++;
-              setTimeout(attemptLoad, 1000); // Retry after 1 second
+              setTimeout(attemptLoad, 1000);
             } else {
               reject(new Error(`Max retries (${maxRetries}) reached for ${url}`));
             }
@@ -118,42 +124,28 @@ export default function IndividualProgress() {
     const doc = new jsPDF();
 
     try {
-      // Load logo as base64
-      console.log("Attempting to load logo from:", logo);
-      const logoBase64 = await loadImageAsBase64(logo);
-      console.log("Logo loaded successfully (first 50 chars):", logoBase64.slice(0, 50) + "...");
-      doc.addImage(logoBase64, "PNG", 10, 10, 40, 20); // Reduced logo height to 20
-
-      // Add progress metadata
       doc.setFontSize(18);
       const name = progress.name || "Untitled";
       doc.text(name, 10, 40);
 
-      // Add topic
       doc.setFontSize(12);
       const topic = progress.topic || "No topic";
       doc.text(`Topic: ${topic}`, 10, 50);
 
-      // Add status
       doc.text(`Status: ${progress.status || "Unknown"}`, 10, 60);
 
-      // Add tag
       doc.text(`Tag: ${progress.tag || "None"}`, 10, 70);
 
-      // Add date
       const date = progress.createdAt
         ? new Date(progress.createdAt).toLocaleDateString()
         : new Date().toLocaleDateString();
       doc.text(`Created: ${date}`, 10, 80);
 
-      // Load and add the progress image if available
       let yPosition = 90;
       if (progress.image) {
         const imageUrl = `http://localhost:8080/uploads/${progress.image}`;
-        console.log("Attempting to load progress image from:", imageUrl);
         try {
           const imageBase64 = await loadImageAsBase64(imageUrl);
-          console.log("Progress image loaded successfully (first 50 chars):", imageBase64.slice(0, 50) + "...");
           const format = imageBase64.startsWith("data:image/jpeg") ? "JPEG" : "PNG";
           doc.addImage(imageBase64, format, 10, yPosition, 150, 80);
           yPosition += 90;
@@ -162,11 +154,9 @@ export default function IndividualProgress() {
         }
       }
 
-      // Add description
       addContentToPDF(doc, progress.description || "No description available", name, yPosition);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      // Fallback if any image fails
       doc.setFontSize(18);
       doc.text(progress.name || "Untitled", 10, 40);
       doc.setFontSize(12);
@@ -204,7 +194,6 @@ export default function IndividualProgress() {
         });
 
         doc.text("(Description truncated due to single-page limit...)", 10, yPosition + maxLines * 10);
-        console.log(`Truncated content: Only ${maxLines} of ${contentLines.length} lines fit.`);
         doc.save(`${title || "Progress"}.pdf`);
         return;
       }
@@ -219,21 +208,15 @@ export default function IndividualProgress() {
 
   if (error) {
     return (
-      <div>
-     
-        <div className="max-w-3xl mx-auto mt-10 pt-20 px-4 text-center">
-          <p className="text-red-600 text-lg">{error}</p>
-        </div>
-     
+      <div className="max-w-3xl mx-auto mt-10 pt-20 px-4 text-center">
+        <p className="text-red-600 text-lg">{error}</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="pb-10">
-        
-      </div>
+      <div className="pb-10"></div>
       <div className="max-w-3xl mx-auto mt-6 md:mt-10 pt-20 px-4">
         <h1 className="text-4xl font-bold text-center mb-8">{progress.name || "Loading..."}</h1>
 
@@ -244,6 +227,11 @@ export default function IndividualProgress() {
               ? new Date(progress.createdAt).toLocaleDateString()
               : new Date().toLocaleDateString()}
           </p>
+          {progress.user && (
+            <p className="text-lg text-gray-600">
+              Created By: <span className="font-semibold">{progress.user.fullname} ({progress.user.email})</span>
+            </p>
+          )}
         </div>
 
         {progress.image && (
@@ -299,9 +287,6 @@ export default function IndividualProgress() {
             Stop
           </button>
         </div>
-      </div>
-      <div>
-       
       </div>
     </div>
   );
