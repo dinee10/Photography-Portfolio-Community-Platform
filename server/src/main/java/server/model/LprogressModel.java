@@ -1,8 +1,6 @@
 package server.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +18,10 @@ public class LprogressModel {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserModel user;
 
     public LprogressModel(){
 
@@ -107,5 +109,13 @@ public class LprogressModel {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public UserModel getUser() {
+        return user;
+    }
+
+    public void setUser(UserModel user) {
+        this.user = user;
     }
 }
