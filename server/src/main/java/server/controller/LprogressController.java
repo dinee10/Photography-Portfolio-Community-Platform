@@ -1,11 +1,15 @@
 package server.controller;
 
 import server.exception.LprogressNotFoundException;
+import server.exception.UserNotFoundException;
 import server.model.LprogressModel;
+import server.model.UserModel;
 import server.repository.LprogressRepository;
+import server.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +28,10 @@ public class LprogressController {
     private LprogressRepository lprogressRepository;
 
     @Autowired
-    private ObjectMapper objectMapper; // Use Spring-managed ObjectMapper
+    private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private final String UPLOAD_DIR = "src/main/uploads/";
 
@@ -35,7 +42,11 @@ public class LprogressController {
             @RequestParam("description") String description,
             @RequestParam("status") String status,
             @RequestParam("tag") String tag,
-            @RequestParam("file") MultipartFile file) throws IOException {
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("userId") Long userId) throws IOException {
+
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         File uploadDir = new File(UPLOAD_DIR);
@@ -53,19 +64,39 @@ public class LprogressController {
         newLprogressModel.setImage(imageName);
         newLprogressModel.setCreatedAt(LocalDateTime.now());
         newLprogressModel.setUpdatedAt(LocalDateTime.now());
+        newLprogressModel.setUser(user);
 
         return lprogressRepository.save(newLprogressModel);
     }
 
     @GetMapping("/progress")
-    List<LprogressModel> getAllProgress() {
-        return lprogressRepository.findAll();
+    public List<LprogressModel> getUserProgress(@RequestParam("userId") Long userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        return lprogressRepository.findByUser(user);
     }
 
     @GetMapping("/progress/{id}")
-    LprogressModel getProgressId(@PathVariable Long id) {
+    public LprogressModel getProgressId(@PathVariable Long id, @RequestParam("userId") Long userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        LprogressModel progress = lprogressRepository.findById(id)
+                .orElseThrow(() -> new LprogressNotFoundException(id));
+        if (!progress.getUser().getId().equals(userId)) {
+            throw new LprogressNotFoundException("Progress not owned by user");
+        }
+        return progress;
+    }
+
+    @GetMapping("/progress/update/{id}")
+    public LprogressModel getProgressId(@PathVariable Long id) {
         return lprogressRepository.findById(id)
                 .orElseThrow(() -> new LprogressNotFoundException(id));
+    }
+
+    @GetMapping("/progress/all")
+    public List<LprogressModel> getAllProgress() {
+        return lprogressRepository.findAll();
     }
 
     @GetMapping("/uploads/{filename}")
@@ -78,73 +109,118 @@ public class LprogressController {
     }
 
     @PutMapping("/progress/{id}")
-    public LprogressModel updateProgress(
-            @RequestPart(value = "progress details") String progressDetails,
+    public ResponseEntity<?> updateProgress(
+            @RequestPart(value = "progress details", required = false) String progressDetails,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @PathVariable Long id
-    ) {
-        LprogressModel newProgress;
+            @PathVariable Long id,
+            @RequestParam("userId") Long userId) {
         try {
-            newProgress = objectMapper.readValue(progressDetails, LprogressModel.class);
-        } catch (IOException e) {
-            System.err.println("Error parsing progress details: " + e.getMessage());
-            throw new RuntimeException("Invalid progress details format", e);
-        }
+            System.out.println("Received userId: " + userId);
+            System.out.println("Received progress details: " + progressDetails);
+            System.out.println("File present: " + (file != null ? file.getOriginalFilename() : "No file"));
 
-        return lprogressRepository.findById(id).map(existingProgress -> {
-            existingProgress.setName(newProgress.getName());
-            existingProgress.setTopic(newProgress.getTopic());
-            existingProgress.setDescription(newProgress.getDescription());
-            existingProgress.setStatus(newProgress.getStatus());
-            existingProgress.setTag(newProgress.getTag());
-            existingProgress.setUpdatedAt(
-                    newProgress.getUpdatedAt() != null ? newProgress.getUpdatedAt() : LocalDateTime.now()
-            );
-
-            if (file != null && !file.isEmpty()) {
-                try {
-                    String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                    File uploadDir = new File(UPLOAD_DIR);
-                    if (!uploadDir.exists()) {
-                        uploadDir.mkdirs();
-                    }
-                    file.transferTo(Paths.get(UPLOAD_DIR + imageName));
-                    existingProgress.setImage(imageName);
-                } catch (IOException e) {
-                    System.err.println("Error saving file: " + e.getMessage());
-                    throw new RuntimeException("Failed to save image", e);
-                }
+            if (progressDetails == null || progressDetails.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Error: 'progress details' part is missing or empty");
             }
 
+            UserModel user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException(userId));
+
+            LprogressModel newProgress;
             try {
-                return lprogressRepository.save(existingProgress);
-            } catch (Exception e) {
-                System.err.println("Error saving to database: " + e.getMessage());
-                throw new RuntimeException("Failed to update progress in database", e);
+                newProgress = objectMapper.readValue(progressDetails, LprogressModel.class);
+            } catch (IOException e) {
+                System.err.println("Error parsing progress details: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Error: Invalid progress details format - " + e.getMessage());
             }
-        }).orElseThrow(() -> new LprogressNotFoundException(id));
+
+            LprogressModel updatedProgress = lprogressRepository.findById(id).map(existingProgress -> {
+                if (!existingProgress.getUser().getId().equals(userId)) {
+                    throw new LprogressNotFoundException("Progress not owned by user");
+                }
+                existingProgress.setName(newProgress.getName() != null ? newProgress.getName() : existingProgress.getName());
+                existingProgress.setTopic(newProgress.getTopic() != null ? newProgress.getTopic() : existingProgress.getTopic());
+                existingProgress.setDescription(newProgress.getDescription() != null ? newProgress.getDescription() : existingProgress.getDescription());
+                existingProgress.setStatus(newProgress.getStatus() != null ? newProgress.getStatus() : existingProgress.getStatus());
+                existingProgress.setTag(newProgress.getTag() != null ? newProgress.getTag() : existingProgress.getTag());
+                existingProgress.setUpdatedAt(LocalDateTime.now());
+
+                if (file != null && !file.isEmpty()) {
+                    try {
+                        String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                        File uploadDir = new File(UPLOAD_DIR);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdirs();
+                        }
+                        file.transferTo(Paths.get(UPLOAD_DIR + imageName));
+                        String oldImage = existingProgress.getImage();
+                        if (oldImage != null && !oldImage.isEmpty()) {
+                            File oldImageFile = new File(UPLOAD_DIR + oldImage);
+                            if (oldImageFile.exists()) {
+                                oldImageFile.delete();
+                            }
+                        }
+                        existingProgress.setImage(imageName);
+                    } catch (IOException e) {
+                        System.err.println("Error saving file: " + e.getMessage());
+                        throw new RuntimeException("Failed to save image", e);
+                    }
+                }
+
+                try {
+                    return lprogressRepository.save(existingProgress);
+                } catch (Exception e) {
+                    System.err.println("Error saving to database: " + e.getMessage());
+                    throw new RuntimeException("Failed to update progress in database", e);
+                }
+            }).orElseThrow(() -> new LprogressNotFoundException(id));
+
+            return ResponseEntity.ok(updatedProgress);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Error: User not found - " + e.getMessage());
+        } catch (LprogressNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Error: Progress not found or not owned by user - " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: Failed to update progress - " + e.getMessage());
+        }
     }
 
-    //delete
     @DeleteMapping("/progress/{id}")
-    String deleteProgress(@PathVariable Long id){
-        //check exist in db
-        LprogressModel progressItem = lprogressRepository.findById(id)
-                .orElseThrow(()-> new LprogressNotFoundException(id));
-        //img delete part
-        String image = progressItem.getImage();
-        if(image != null && !image.isEmpty()){
-            File imageFile = new File("src/main/uploads" + image);
-            if(imageFile.exists()){
-                if(imageFile.delete()){
-                    System.out.println("Image deleted");
-                }else{
-                    System.out.println("failed image deleted");
+    public ResponseEntity<String> deleteProgress(@PathVariable Long id, @RequestParam("userId") Long userId) {
+        try {
+            UserModel user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException(userId));
+            LprogressModel progressItem = lprogressRepository.findById(id)
+                    .orElseThrow(() -> new LprogressNotFoundException(id));
+            if (!progressItem.getUser().getId().equals(userId)) {
+                throw new LprogressNotFoundException("Progress not owned by user");
+            }
+
+            String image = progressItem.getImage();
+            if (image != null && !image.isEmpty()) {
+                File imageFile = new File(UPLOAD_DIR + image);
+                if (imageFile.exists()) {
+                    if (imageFile.delete()) {
+                        System.out.println("Image deleted");
+                    } else {
+                        System.out.println("Failed to delete image");
+                    }
                 }
             }
+
+            lprogressRepository.deleteById(id);
+            return ResponseEntity.ok("Data with id " + id + " and image deleted");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Error: User not found - " + e.getMessage());
+        } catch (LprogressNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Error: Progress not found or not owned byyss user - " + e.getMessage());
         }
-        //delete item from the repo
-        lprogressRepository.deleteById(id);
-        return "data with id" +id + "and image deleted";
     }
 }
