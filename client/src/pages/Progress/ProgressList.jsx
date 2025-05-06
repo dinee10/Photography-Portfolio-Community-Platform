@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Swal from 'sweetalert2';
-import Navbar from '../../component/Navbar/Navbar'; // Assuming you have a similar Navbar component
+import Navbar from '../../component/Navbar/Navbar';
 
-// Component to animate individual words with spacing
 const AnimatedText = ({ text, className }) => {
   const words = text.split(' ');
   return (
@@ -25,7 +24,6 @@ const AnimatedText = ({ text, className }) => {
   );
 };
 
-// ProgressCard Component (Similar to BlogCard)
 const ProgressCard = ({ progress, index }) => {
   const placeholderImage =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==';
@@ -47,7 +45,7 @@ const ProgressCard = ({ progress, index }) => {
 
   return (
     <Link
-      to={`/progress/${progress.id}`} // Assuming a route to view individual progress
+      to={`/progress/${progress.id}`}
       className="flex flex-col bg-white shadow-md rounded-lg overflow-hidden mb-4 transform transition-all duration-300 hover:shadow-xl hover:scale-[1.01] max-w-3xl mx-auto animate-slideUp border-2 border-transparent hover:border-transparent hover:[box-shadow:0_0_10px_2px_rgba(239,68,68,0.5)]"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
@@ -77,6 +75,11 @@ const ProgressCard = ({ progress, index }) => {
           <p className="text-sm text-gray-600">
             <strong>Tag:</strong> {progress.tag}
           </p>
+          {progress.user && (
+            <p className="text-sm text-gray-600">
+              <strong>Created By:</strong> {progress.user.fullname} ({progress.user.email})
+            </p>
+          )}
         </div>
         <div className="text-blue-500 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition duration-300">
           <AnimatedText text="View Details" className="text-blue-500" />
@@ -97,7 +100,7 @@ const ProgressList = () => {
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/progress');
+        const response = await axios.get('http://localhost:8080/progress/all');
         setProgressList(response.data);
       } catch (err) {
         setError('Failed to fetch progress data. Please try again later.');
@@ -105,7 +108,7 @@ const ProgressList = () => {
         Swal.fire({
           icon: 'error',
           title: 'Oops...',
-          text: 'Failed to fetch progress data!',
+          text: 'Failed to fetch progress data!'
         });
       } finally {
         setLoading(false);
@@ -114,7 +117,6 @@ const ProgressList = () => {
     fetchProgress();
   }, []);
 
-  // Filter progress by search term and category (e.g., status or topic)
   const filterProgressByCategory = (category) => {
     return progressList.filter(
       (progress) =>
@@ -125,11 +127,10 @@ const ProgressList = () => {
     );
   };
 
-  // Define categories based on progress status
   const categories = [
     { name: 'In Progress', description: 'Tasks currently being worked on.' },
     { name: 'Completed', description: 'Tasks that have been successfully completed.' },
-    { name: 'Started', description: 'Tasks awaiting action.' },
+    { name: 'Started', description: 'Tasks that have been initiated.' }
   ];
 
   return (
@@ -174,7 +175,6 @@ const ProgressList = () => {
 
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      {/* Header Section */}
       <div className="relative text-white h-[400px] bg-black">
         <div className="relative container mx-auto px-4 h-full flex items-center">
           <div className="flex flex-col justify-center animate-headerSlide">
@@ -194,7 +194,6 @@ const ProgressList = () => {
         </div>
       </div>
 
-      {/* Search Bar Section */}
       <div className="container mx-auto px-4 py-6">
         <div className="relative w-full max-w-md mx-auto">
           <input
@@ -204,13 +203,12 @@ const ProgressList = () => {
             placeholder="Search progress..."
             className="w-full py-2 pl-10 pr-4 text-gray-700 bg-gray-100 border border-red-500 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-500 focus:bg-white shadow-sm"
           />
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+          <div className="absolute inset-y-0 items-center'inf-0 left-0 flex items-center pl-3">
             <Search className="text-gray-500" size={20} />
           </div>
         </div>
       </div>
 
-      {/* Welcome Note Section */}
       <div className="container mx-auto px-4 py-8">
         <div className="bg-red-500 rounded-lg shadow-md p-6 text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -218,14 +216,13 @@ const ProgressList = () => {
           </h2>
           <p className="text-white">
             <AnimatedText
-              text="Stay onトップ of your tasks with real-time updates."
+              text="Stay on top of your tasks with real-time updates."
               className="text-white"
             />
           </p>
         </div>
       </div>
 
-      {/* Category Navigation */}
       <div className="container mx-auto px-4 py-4 bg-red-500 border-b border-gray-200">
         <nav className="flex flex-wrap gap-4">
           {categories.map((category) => (
@@ -242,7 +239,6 @@ const ProgressList = () => {
         </nav>
       </div>
 
-      {/* Category Sections */}
       {loading ? (
         <div className="text-center py-8">
           <p className="text-purple-900 text-lg">Loading progress...</p>
@@ -275,8 +271,6 @@ const ProgressList = () => {
           );
         })
       )}
-
-     
     </div>
   );
 };
