@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-
 // Name regex: letters and spaces only
 const nameRegex = /^[A-Za-z\s]+$/;
 
@@ -13,8 +12,7 @@ const Progress = () => {
     topic: '',
     description: '',
     status: '',
-    tag: '',
-    createdAt: '',
+    tag: ''
   });
   const [file, setFile] = useState(null);
   const [formErrors, setFormErrors] = useState({
@@ -23,14 +21,10 @@ const Progress = () => {
     description: '',
     status: '',
     tag: '',
-    createdAt: '',
-    file: '',
+    file: ''
   });
   const navigate = useNavigate();
-
-  // Get today's date in YYYY-MM-DD format for the min attribute
-  const today = new Date();
-  const minDate = today.toISOString().split('T')[0]; // Formats as "2025-04-26"
+  const userId = localStorage.getItem('userId');
 
   // Validate a single field
   const validateField = (fieldName, value) => {
@@ -68,11 +62,6 @@ const Progress = () => {
       case 'tag':
         if (value && value.length > 50) {
           error = 'Tag cannot exceed 50 characters';
-        }
-        break;
-      case 'createdAt':
-        if (!value) {
-          error = 'Please select a date';
         }
         break;
       case 'file':
@@ -119,7 +108,6 @@ const Progress = () => {
     errors.description = validateField('description', formData.description);
     errors.status = validateField('status', formData.status);
     errors.tag = validateField('tag', formData.tag);
-    errors.createdAt = validateField('createdAt', formData.createdAt);
     errors.file = validateField('file', file);
 
     Object.values(errors).forEach((error) => {
@@ -133,12 +121,23 @@ const Progress = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!userId) {
+      Swal.fire({
+        title: 'Error',
+        text: 'You must be logged in to add progress.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      navigate('/login');
+      return;
+    }
+
     if (!validateForm()) {
       Swal.fire({
         title: 'Validation Error',
         text: 'Please fix the errors in the form before submitting.',
         icon: 'error',
-        confirmButtonText: 'OK',
+        confirmButtonText: 'OK'
       });
       return;
     }
@@ -149,46 +148,44 @@ const Progress = () => {
     data.append('description', formData.description);
     data.append('status', formData.status);
     data.append('tag', formData.tag);
-    data.append('createdAt', formData.createdAt);
     data.append('file', file);
+    data.append('userId', userId);
 
     try {
       await axios.post('http://localhost:8080/progress', data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       Swal.fire({
         title: 'Success',
         text: 'Progress saved successfully',
-        icon: 'success',
+        icon: 'success'
       }).then(() => {
         setFormData({
           name: '',
           topic: '',
           description: '',
           status: '',
-          tag: '',
-          createdAt: '',
+          tag: ''
         });
         setFile(null);
         setFormErrors({});
-        navigate('/progresslist');
+        navigate('/admin');
       });
     } catch (err) {
       console.error('Error saving progress:', err);
       Swal.fire({
         title: 'Error',
-        text: 'Failed to save progress. Please try again.',
-        icon: 'error',
+        text: err.response?.data?.message || 'Failed to save progress. Please try again.',
+        icon: 'error'
       });
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-800">
-   
       <div className="container mx-auto py-10 px-4">
         <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Log New Progress</h1>
@@ -202,7 +199,7 @@ const Progress = () => {
                 type="text"
                 name="name"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.name ? "border-red-500" : "border-gray-300"
+                  formErrors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.name}
                 onChange={handleChange}
@@ -221,7 +218,7 @@ const Progress = () => {
                 type="text"
                 name="topic"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.topic ? "border-red-500" : "border-gray-300"
+                  formErrors.topic ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.topic}
                 onChange={handleChange}
@@ -239,7 +236,7 @@ const Progress = () => {
               <textarea
                 name="description"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.description ? "border-red-500" : "border-gray-300"
+                  formErrors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.description}
                 onChange={handleChange}
@@ -258,7 +255,7 @@ const Progress = () => {
               <select
                 name="status"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.status ? "border-red-500" : "border-gray-300"
+                  formErrors.status ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.status}
                 onChange={handleChange}
@@ -282,7 +279,7 @@ const Progress = () => {
                 type="text"
                 name="tag"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.tag ? "border-red-500" : "border-gray-300"
+                  formErrors.tag ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.tag}
                 onChange={handleChange}
@@ -301,33 +298,13 @@ const Progress = () => {
                 type="file"
                 name="file"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.file ? "border-red-500" : "border-gray-300"
+                  formErrors.file ? 'border-red-500' : 'border-gray-300'
                 }`}
                 onChange={handleFileChange}
                 accept="image/*"
               />
               {formErrors.file && (
                 <span className="text-red-500 text-sm mt-1 block">{formErrors.file}</span>
-              )}
-            </div>
-
-            {/* Created At Field */}
-            <div className="mb-4">
-              <label htmlFor="createdAt" className="block text-gray-800 font-semibold mb-2">
-                Created At
-              </label>
-              <input
-                type="date"
-                name="createdAt"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.createdAt ? "border-red-500" : "border-gray-300"
-                }`}
-                value={formData.createdAt}
-                onChange={handleChange}
-                min={minDate}
-              />
-              {formErrors.createdAt && (
-                <span className="text-red-500 text-sm mt-1 block">{formErrors.createdAt}</span>
               )}
             </div>
 
