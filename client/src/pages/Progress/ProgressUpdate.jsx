@@ -28,8 +28,20 @@ export default function ProgressUpdate() {
   useEffect(() => {
     if (!id) return;
 
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      Swal.fire({
+        title: "Error",
+        text: "User not logged in. Please log in to update progress.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      navigate('/login');
+      return;
+    }
+
     axios
-      .get(`http://localhost:8080/progress/${id}`)
+      .get(`http://localhost:8080/progress/${id}?userId=${userId}`)
       .then((res) => {
         setFormData({
           name: res.data.name || "",
@@ -46,12 +58,12 @@ export default function ProgressUpdate() {
         setLoading(false);
         Swal.fire({
           title: "Error",
-          text: "Failed to load progress data.",
+          text: err.response?.data?.message || "Failed to load progress data.",
           icon: "error",
           confirmButtonText: "OK",
         });
       });
-  }, [id]);
+  }, [id, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -106,13 +118,24 @@ export default function ProgressUpdate() {
       return;
     }
 
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      Swal.fire({
+        title: "Error",
+        text: "User not logged in. Please log in to update progress.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      navigate('/login');
+      return;
+    }
+
     const progressDetails = {
       name: formData.name,
       topic: formData.topic,
       description: formData.description,
       status: formData.status,
       tag: formData.tag,
-      updatedAt: new Date().toISOString(),
     };
 
     const data = new FormData();
@@ -121,8 +144,13 @@ export default function ProgressUpdate() {
       data.append("file", file);
     }
 
+    // Log FormData contents for debugging
+    for (let [key, value] of data.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
     try {
-      const response = await axios.put(`http://localhost:8080/progress/${id}`, data, {
+      const response = await axios.put(`http://localhost:8080/progress/${id}?userId=${userId}`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -135,9 +163,10 @@ export default function ProgressUpdate() {
       }).then(() => navigate("/admin"));
     } catch (err) {
       console.error("Submit error:", err.response?.data || err.message);
+      const errorMessage = err.response?.data || "Failed to update progress.";
       Swal.fire({
         title: "Error",
-        text: err.response?.data?.error || "Failed to update progress.",
+        text: errorMessage,
         icon: "error",
         confirmButtonText: "OK",
       });
