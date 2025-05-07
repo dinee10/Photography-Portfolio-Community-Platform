@@ -53,7 +53,7 @@ export default function AddBlog() {
       setFormData({ title: "", content: "", author: "", category: "AI" });
       setImages([]);
       setCharCount(0);
-      setTimeout(() => navigate("/"), 2000);
+      setTimeout(() => navigate("/blog-list"), 2000);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to add blog. Please try again.");
       console.error("Error adding blog:", err);
