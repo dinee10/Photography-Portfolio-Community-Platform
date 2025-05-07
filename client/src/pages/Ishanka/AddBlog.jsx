@@ -47,8 +47,8 @@ export default function AddBlog() {
       case "content":
         if (!value.trim()) {
           errorMessage = "Content is required";
-        } else if (value.length < 20) {
-          errorMessage = "Content must be at least 20 characters long";
+        } else if (value.length < 10) {
+          errorMessage = "Content must be at least 10 characters long";
         } else if (value.length > MAX_CONTENT_LENGTH) {
           errorMessage = `Content cannot exceed ${MAX_CONTENT_LENGTH} characters`;
         }
