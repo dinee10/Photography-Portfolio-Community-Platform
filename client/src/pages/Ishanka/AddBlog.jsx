@@ -389,7 +389,7 @@ export default function AddBlog() {
           <div className="flex justify-end space-x-3 mt-8">
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/blog-list")}
               className="px-6 py-2.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors shadow-sm flex items-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
