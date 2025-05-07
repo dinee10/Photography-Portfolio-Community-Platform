@@ -577,7 +577,7 @@ export default function UserBlog() {
                                   to={`/blog/${blog.id}`}
                                   className="inline-block bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-full transition duration-300 self-start"
                                 >
-                                  Read Recipe
+                                  Read Blog
                                 </Link>
                               </div>
                             </div>
