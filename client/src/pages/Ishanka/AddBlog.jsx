@@ -202,7 +202,7 @@ export default function AddBlog() {
         author: false,
         images: false
       });
-      setTimeout(() => navigate("/blog-list"), 2000);
+      setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to add blog. Please try again.");
       console.error("Error adding blog:", err);
@@ -389,7 +389,7 @@ export default function AddBlog() {
           <div className="flex justify-end space-x-3 mt-8">
             <button
               type="button"
-              onClick={() => navigate("/blog-list")}
+              onClick={() => navigate("/dashboard")}
               className="px-6 py-2.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors shadow-sm flex items-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
