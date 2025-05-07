@@ -399,7 +399,7 @@ export default function AddBlog() {
             </button>
             <button
               type="submit"
-              className={`px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center ${hasErrors || charCount > MAX_CONTENT_LENGTH ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`px-6 py-2.5 bg-red-500 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm flex items-center ${hasErrors || charCount > MAX_CONTENT_LENGTH ? "opacity-50 cursor-not-allowed" : ""}`}
               disabled={hasErrors || charCount > MAX_CONTENT_LENGTH}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
