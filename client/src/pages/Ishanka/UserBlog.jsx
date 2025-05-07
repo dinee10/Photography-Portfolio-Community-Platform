@@ -311,7 +311,7 @@ export default function UserBlog() {
               I hope my journey and content inspire you to see beauty in everyday moments.
             </p>
             <Link
-              to="/hire-me"
+              to="www.instagram.com/__dinidu____/"
               className="inline-block bg-red-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-300 shadow-md hover:shadow-lg"
             >
               Hire Me
