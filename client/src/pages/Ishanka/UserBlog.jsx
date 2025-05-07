@@ -463,7 +463,7 @@ export default function UserBlog() {
                 <p className="text-gray-900 mb-5">{category.description}</p>
 
                 {category.name === "Fashion" ? (
-                  <div className="bg-gradient-to-r from-gray-100 to-gray- rounded-lg shadow-lg border border-gray-900">
+                  <div className="bg-gradient-to-r from-gray-900 to-gray-900 rounded-lg shadow-lg border border-white">
                     <div className="grid grid-cols-1">
                       <div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
@@ -502,9 +502,9 @@ export default function UserBlog() {
                             Fashion Highlights
                           </h3>
                           <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-pink-500 mb-3 rounded-full mx-auto"></div>
-                          <p className="text-sm text-gray-800">
+                          <p className="text-sm text-white">
                             Discover the latest trends and styles in the world of fashion.{" "}
-                            <Link to="/category/fashion" className="text-gray-600 hover:underline">
+                            <Link to="/category/fashion" className="text-red-600 hover:underline">
                               Explore more.
                             </Link>
                           </p>
@@ -533,7 +533,7 @@ export default function UserBlog() {
                       </>
                     )}
 
-                    <div className="overflow-hidden relative h-[500px] rounded-xl shadow-lg bg-white">
+                    <div className="overflow-hidden relative h-[500px] rounded-xl shadow-lg bg-black/50">
                       {filteredBlogs.length > 0 ? (
                         filteredBlogs.map((blog, index) => (
                           <div
