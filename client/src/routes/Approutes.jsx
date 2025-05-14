@@ -9,7 +9,7 @@ import ProgressList from '../pages/Progress/ProgressList';
 import IndividualProgress from '../pages/Progress/IndividualProgress';
 import ListProgress from '../pages/Progress/Progress';
 import ProgressL from '../pages/Progress/Progress';
-import Admin from '../pages/Dasboard/Admin';
+import User from '../pages/Dasboard/User';
 
 const AppRoutes = () => {
   return (
@@ -28,7 +28,7 @@ const AppRoutes = () => {
           <Route path='/progress/:id' element={<IndividualProgress />} />
           <Route path='/progress' element={<ListProgress />} />
           <Route path='/progressl' element={<ProgressL />} />
-          <Route path='/admin' element={<Admin />} />
+          <Route path='/admin' element={<User />} />
           </Routes>
 </Router>   
     </div>
