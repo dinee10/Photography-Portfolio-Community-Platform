@@ -2,7 +2,8 @@ package server.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
 
 @Entity
 public class LprogressModel {
@@ -16,8 +17,8 @@ public class LprogressModel {
     private String image;
     private String tag;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDate createdAt; // Changed to LocalDate
+    private LocalDate updatedAt; // Changed to LocalDate
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -27,9 +28,9 @@ public class LprogressModel {
 
     }
 
-    public LprogressModel(String name, Long id, String topic, String description, String status, String image, String tag, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.name = name;
+    public LprogressModel(Long id, String name, String topic, String description, String status, String image, String tag, LocalDate createdAt, LocalDate updatedAt, UserModel user) {
         this.id = id;
+        this.name = name;
         this.topic = topic;
         this.description = description;
         this.status = status;
@@ -37,6 +38,7 @@ public class LprogressModel {
         this.tag = tag;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.user = user;
     }
 
     public Long getId() {
@@ -95,19 +97,19 @@ public class LprogressModel {
         this.tag = tag;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public LocalDate getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public LocalDate getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(LocalDate updatedAt) {
         this.updatedAt = updatedAt;
     }
 
