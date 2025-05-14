@@ -7,12 +7,14 @@ import Swal from 'sweetalert2';
 const nameRegex = /^[A-Za-z\s]+$/;
 
 const Progress = () => {
+  const today = '2025-05-14'; // Today's date in YYYY-MM-DD format
   const [formData, setFormData] = useState({
     name: '',
     topic: '',
     description: '',
     status: '',
-    tag: ''
+    tag: '',
+    createdAt: today // Default to today
   });
   const [file, setFile] = useState(null);
   const [formErrors, setFormErrors] = useState({
@@ -21,7 +23,8 @@ const Progress = () => {
     description: '',
     status: '',
     tag: '',
-    file: ''
+    file: '',
+    createdAt: ''
   });
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
@@ -73,6 +76,18 @@ const Progress = () => {
           error = 'Image size must not exceed 5MB';
         }
         break;
+      case 'createdAt':
+        if (!value) {
+          error = 'Created date is required';
+        } else {
+          const selectedDate = new Date(value);
+          const todayDate = new Date(today);
+          todayDate.setHours(0, 0, 0, 0); // Reset time for comparison
+          if (selectedDate < todayDate) {
+            error = 'Created date must be today or later';
+          }
+        }
+        break;
       default:
         break;
     }
@@ -109,6 +124,7 @@ const Progress = () => {
     errors.status = validateField('status', formData.status);
     errors.tag = validateField('tag', formData.tag);
     errors.file = validateField('file', file);
+    errors.createdAt = validateField('createdAt', formData.createdAt);
 
     Object.values(errors).forEach((error) => {
       if (error) isValid = false;
@@ -150,6 +166,7 @@ const Progress = () => {
     data.append('tag', formData.tag);
     data.append('file', file);
     data.append('userId', userId);
+    data.append('createdAt', formData.createdAt);
 
     try {
       await axios.post('http://localhost:8080/progress', data, {
@@ -168,7 +185,8 @@ const Progress = () => {
           topic: '',
           description: '',
           status: '',
-          tag: ''
+          tag: '',
+          createdAt: today
         });
         setFile(null);
         setFormErrors({});
@@ -286,6 +304,26 @@ const Progress = () => {
               />
               {formErrors.tag && (
                 <span className="text-red-500 text-sm mt-1 block">{formErrors.tag}</span>
+              )}
+            </div>
+
+            {/* Created At Field */}
+            <div className="mb-4">
+              <label htmlFor="createdAt" className="block text-gray-800 font-semibold mb-2">
+                Created At
+              </label>
+              <input
+                type="date"
+                name="createdAt"
+                min={today} // Restrict to today or later
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.createdAt ? 'border-red-500' : 'border-gray-300'
+                }`}
+                value={formData.createdAt}
+                onChange={handleChange}
+              />
+              {formErrors.createdAt && (
+                <span className="text-red-500 text-sm mt-1 block">{formErrors.createdAt}</span>
               )}
             </div>
 
