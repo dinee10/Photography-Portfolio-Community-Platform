@@ -14,7 +14,7 @@ function BlogList() {
 
   const fetchBlogs = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/blog');
+      const res = await axios.get('http://localhost:8080/blog');
       setBlogs(res.data);
       setLoading(false);
     } catch (err) {
@@ -28,7 +28,7 @@ function BlogList() {
     const confirmed = window.confirm('Are you sure you want to delete this blog?');
     if (confirmed) {
       try {
-        const res = await axios.delete(`http://localhost:5000/blog/${id}`);
+        const res = await axios.delete(`http://localhost:8080/blog/${id}`);
         alert(res.data.message || 'Blog deleted successfully!');
         setDeleteError(null);
         fetchBlogs();
@@ -72,7 +72,7 @@ function BlogList() {
               <div className="flex-shrink-0 mr-4">
                 {blog.blogImages && blog.blogImages.length > 0 ? (
                   <img
-                    src={`http://localhost:5000/blog/uploads/${blog.blogImages[0]}`}
+                    src={`http://localhost:8080/blog/uploads/${blog.blogImages[0]}`}
                     alt={blog.title}
                     className="w-32 h-32 object-cover rounded-md border border-gray-300"
                     onError={(e) => (e.target.src = 'https://via.placeholder.com/128')}
