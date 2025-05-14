@@ -13,7 +13,7 @@ const PostCard = ({ post, index }) => {
 
   const postedDate = new Date(post.createdAt || Date.now());
   const daysAgo = Math.floor((Date.now() - postedDate) / (1000 * 60 * 60 * 24));
-  const metadata = `by ${post.author || 'Unknown'} in ${post.category || 'wildphotography'} • ${daysAgo} days ago`;
+  const metadata = `by ${post.author || 'Unknown'} in ${post.status || 'wildphotography'} • ${daysAgo} days ago`;
 
   return (
     <div
@@ -92,7 +92,7 @@ const PostDetail = ({ post, onBack }) => {
           <div className="flex justify-between items-start mb-4">
             <div>
               <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-2">
-                {post.category || 'General'}
+                {post.status || 'General'}
               </span>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                 {post.name}
