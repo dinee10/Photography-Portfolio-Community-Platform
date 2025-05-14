@@ -7,12 +7,12 @@ import Swal from 'sweetalert2';
 // Name regex: letters and spaces only
 const nameRegex = /^[A-Za-z\s]+$/;
 
-const Progress = () => {
+const Post = () => {
   const [formData, setFormData] = useState({
     name: '',
     topic: '',
     description: '',
-    status: '',
+    category: '',
     tag: '',
     createdAt: '',
   });
@@ -21,7 +21,7 @@ const Progress = () => {
     name: '',
     topic: '',
     description: '',
-    status: '',
+    category: '',
     tag: '',
     createdAt: '',
     file: '',
@@ -60,9 +60,9 @@ const Progress = () => {
           error = 'Description must be between 10 and 500 characters';
         }
         break;
-      case 'status':
+      case 'category':
         if (!value) {
-          error = 'Please select a status';
+          error = 'Please select a category';
         }
         break;
       case 'tag':
@@ -117,7 +117,7 @@ const Progress = () => {
     errors.name = validateField('name', formData.name);
     errors.topic = validateField('topic', formData.topic);
     errors.description = validateField('description', formData.description);
-    errors.status = validateField('status', formData.status);
+    errors.category = validateField('category', formData.category);
     errors.tag = validateField('tag', formData.tag);
     errors.createdAt = validateField('createdAt', formData.createdAt);
     errors.file = validateField('file', file);
@@ -147,7 +147,7 @@ const Progress = () => {
     data.append('name', formData.name);
     data.append('topic', formData.topic);
     data.append('description', formData.description);
-    data.append('status', formData.status);
+    data.append('category', formData.category);
     data.append('tag', formData.tag);
     data.append('createdAt', formData.createdAt);
     data.append('file', file);
@@ -168,7 +168,7 @@ const Progress = () => {
           name: '',
           topic: '',
           description: '',
-          status: '',
+          category: '',
           tag: '',
           createdAt: '',
         });
@@ -250,26 +250,26 @@ const Progress = () => {
               )}
             </div>
 
-            {/* Status Field */}
+            {/* Category Field */}
             <div className="mb-4">
-              <label htmlFor="status" className="block text-gray-800 font-semibold mb-2">
-                Status
+              <label htmlFor="category" className="block text-gray-800 font-semibold mb-2">
+                Category
               </label>
               <select
-                name="status"
+                name="category"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.status ? "border-red-500" : "border-gray-300"
+                  formErrors.category ? "border-red-500" : "border-gray-300"
                 }`}
-                value={formData.status}
+                value={formData.category}
                 onChange={handleChange}
               >
-                <option value="">Select Status</option>
+                <option value="">Select Category</option>
                 <option value="Potrait">Potrait</option>
                 <option value="Landscape">Landscape</option>
                 <option value="Nature">Nature</option>
               </select>
-              {formErrors.status && (
-                <span className="text-red-500 text-sm mt-1 block">{formErrors.status}</span>
+              {formErrors.category && (
+                <span className="text-red-500 text-sm mt-1 block">{formErrors.category}</span>
               )}
             </div>
 
@@ -335,8 +335,7 @@ const Progress = () => {
             <div className="text-center">
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
-              >
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
                 Submit
               </button>
             </div>
@@ -347,4 +346,5 @@ const Progress = () => {
   );
 };
 
-export default Progress;
+export default Post;
+
