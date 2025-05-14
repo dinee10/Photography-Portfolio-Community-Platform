@@ -11,6 +11,7 @@ export default function IndividualProgress() {
   const [isPaused, setIsPaused] = useState(false);
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
+  const minDate = new Date('2025-05-14'); // Minimum allowed date (today)
 
   useEffect(() => {
     if (!userId) {
@@ -30,7 +31,17 @@ export default function IndividualProgress() {
       })
       .then((res) => {
         console.log("Progress data fetched:", res.data);
-        setProgress(res.data);
+        const fetchedProgress = res.data;
+        // Validate createdAt
+        const createdAtDate = fetchedProgress.createdAt ? new Date(fetchedProgress.createdAt) : null;
+        
+        // Validate updatedAt (optional, may be null)
+        const updatedAtDate = fetchedProgress.updatedAt ? new Date(fetchedProgress.updatedAt) : null;
+        if (updatedAtDate && updatedAtDate < minDate) {
+          console.warn("Invalid updatedAt date:", fetchedProgress.updatedAt);
+          fetchedProgress.updatedAt = null; // Treat invalid updatedAt as missing
+        }
+        setProgress(fetchedProgress);
       })
       .catch((err) => {
         console.error("Error fetching progress:", err);
@@ -49,9 +60,15 @@ export default function IndividualProgress() {
     }
 
     const utterance = new SpeechSynthesisUtterance();
+    const createdDate = progress.createdAt
+      ? new Date(progress.createdAt).toLocaleDateString()
+      : "Not available";
+    const updatedDate = progress.updatedAt
+      ? new Date(progress.updatedAt).toLocaleDateString()
+      : "Not available";
     const textToSpeak = `${progress.name || "Untitled Progress"}. Topic: ${progress.topic || "No topic"}. ${
       progress.description || "No description available"
-    }. Status: ${progress.status || "Unknown"}. Tag: ${progress.tag || "None"}.`;
+    }. Status: ${progress.status || "Unknown"}. Tag: ${progress.tag || "None"}. Created: ${createdDate}. Updated: ${updatedDate}.`;
     utterance.text = textToSpeak;
     utterance.lang = "en-US";
     utterance.rate = 1.0;
@@ -136,12 +153,17 @@ export default function IndividualProgress() {
 
       doc.text(`Tag: ${progress.tag || "None"}`, 10, 70);
 
-      const date = progress.createdAt
+      const createdDate = progress.createdAt
         ? new Date(progress.createdAt).toLocaleDateString()
-        : new Date().toLocaleDateString();
-      doc.text(`Created: ${date}`, 10, 80);
+        : "Not available";
+      doc.text(`Created: ${createdDate}`, 10, 80);
 
-      let yPosition = 90;
+      const updatedDate = progress.updatedAt
+        ? new Date(progress.updatedAt).toLocaleDateString()
+        : "Not available";
+      doc.text(`Updated: ${updatedDate}`, 10, 90);
+
+      let yPosition = 100;
       if (progress.image) {
         const imageUrl = `http://localhost:8080/uploads/${progress.image}`;
         try {
@@ -164,11 +186,14 @@ export default function IndividualProgress() {
       doc.text(`Status: ${progress.status || "Unknown"}`, 10, 60);
       doc.text(`Tag: ${progress.tag || "None"}`, 10, 70);
       doc.text(
-        `Created: ${progress.createdAt ? new Date(progress.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}`,
-        10,
-        80
+        `Created: ${progress.createdAt ? new Date(progress.createdAt).toLocaleDateString() : "Not available"}`,
+        10, 80
       );
-      addContentToPDF(doc, progress.description || "No description available", progress.name || "Untitled", 90);
+      doc.text(
+        `Updated: ${progress.updatedAt ? new Date(progress.updatedAt).toLocaleDateString() : "Not available"}`,
+        10, 90
+      );
+      addContentToPDF(doc, progress.description || "No description available", progress.name || "Untitled", 100);
     }
   };
 
@@ -223,9 +248,14 @@ export default function IndividualProgress() {
         <div className="mb-8 text-center">
           <p className="text-lg text-gray-600">
             Topic: <span className="font-semibold">{progress.topic || "No topic"}</span> |{" "}
-            {progress.createdAt
+            Created: {progress.createdAt
               ? new Date(progress.createdAt).toLocaleDateString()
-              : new Date().toLocaleDateString()}
+              : "Not available"}
+          </p>
+          <p className="text-lg text-gray-600">
+            Updated: {progress.updatedAt
+              ? new Date(progress.updatedAt).toLocaleDateString()
+              : "Not available"}
           </p>
           {progress.user && (
             <p className="text-lg text-gray-600">
