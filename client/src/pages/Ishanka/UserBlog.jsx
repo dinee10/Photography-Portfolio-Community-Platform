@@ -150,7 +150,7 @@ export default function UserBlog() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/blog");
+        const response = await axios.get("http://localhost:8080/blog");
         setBlogs(response.data);
       } catch (err) {
         setError("Failed to fetch blogs. Please try again later.");
@@ -257,7 +257,7 @@ export default function UserBlog() {
                       <img
                         src={
                           blog.blogImages && blog.blogImages.length > 0
-                            ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
+                            ? `http://localhost:8080/blog/uploads/${blog.blogImages[0]}`
                             : placeholderImage
                         }
                         alt={blog.title}
@@ -363,7 +363,7 @@ export default function UserBlog() {
                     <img
                       src={
                         blogs[2].blogImages && blogs[2].blogImages.length > 0
-                          ? `http://localhost:5000/blog/uploads/${blogs[2].blogImages[0]}`
+                          ? `http://localhost:8080/blog/uploads/${blogs[2].blogImages[0]}`
                           : placeholderImage
                       }
                       alt={blogs[2].title}
@@ -388,7 +388,7 @@ export default function UserBlog() {
                     <img
                       src={
                         blogs[3].blogImages && blogs[3].blogImages.length > 0
-                          ? `http://localhost:5000/blog/uploads/${blogs[3].blogImages[0]}`
+                          ? `http://localhost:8080/blog/uploads/${blogs[3].blogImages[0]}`
                           : placeholderImage
                       }
                       alt={blogs[3].title}
@@ -414,7 +414,7 @@ export default function UserBlog() {
                     <img
                       src={
                         blogs[4].blogImages && blogs[4].blogImages.length > 0
-                          ? `http://localhost:5000/blog/uploads/${blogs[4].blogImages[0]}`
+                          ? `http://localhost:8080/blog/uploads/${blogs[4].blogImages[0]}`
                           : placeholderImage
                       }
                       alt={blogs[4].title}
@@ -490,7 +490,7 @@ export default function UserBlog() {
                                   <img
                                     src={
                                       blog.blogImages && blog.blogImages.length > 0
-                                        ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
+                                        ? `http://localhost:8080/blog/uploads/${blog.blogImages[0]}`
                                         : placeholderImage
                                     }
                                     alt={blog.title}
@@ -571,7 +571,7 @@ export default function UserBlog() {
                                   <img
                                     src={
                                       blog.blogImages && blog.blogImages.length > 0
-                                        ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
+                                        ? `http://localhost:8080/blog/uploads/${blog.blogImages[0]}`
                                         : placeholderImage
                                     }
                                     alt={blog.title}
