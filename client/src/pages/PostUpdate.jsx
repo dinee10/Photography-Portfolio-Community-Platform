@@ -14,7 +14,7 @@ function PostUpdate() {
     name: '',
     topic: '',
     description: '',
-    category: '',
+    status: '',
     tag: '',
   });
   const [file, setFile] = useState(null);
@@ -25,7 +25,7 @@ function PostUpdate() {
     name: "",
     topic: "",
     description: "",
-    category: "",
+    status: "",
     tag: "",
     file: "",
   });
@@ -40,7 +40,7 @@ function PostUpdate() {
           name: progress.name || '',
           topic: progress.topic || '',
           description: progress.description || '',
-          category: progress.category || '',
+          status: progress.status || '',
           tag: progress.tag || '',
         });
         setExistingImage(progress.image || "");
@@ -113,7 +113,7 @@ function PostUpdate() {
       name: formData.name,
       topic: formData.topic,
       description: formData.description,
-      category: formData.category,
+      status: formData.status,
       tag: formData.tag,
       updatedAt: new Date().toISOString(),
     };
@@ -201,20 +201,20 @@ function PostUpdate() {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="category" className="block text-gray-800 font-semibold mb-2">Category</label>
+              <label htmlFor="status" className="block text-gray-800 font-semibold mb-2">Status</label>
               <select
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.category ? "border-red-500" : "border-gray-300"}`}
-                id="category"
-                name="category"
-                value={formData.category}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.status ? "border-red-500" : "border-gray-300"}`}
+                id="status"
+                name="status"
+                value={formData.status}
                 onChange={handleChange}
               >
-                <option value="">Select Category</option>
+                <option value="">Select Status</option>
                 <option value="Potrait">Potrait</option>
                 <option value="Landscape">Landscape</option>
                 <option value="Nature">Nature</option>
               </select>
-              {formErrors.category && <span className="text-red-500 text-sm mt-1 block">{formErrors.category}</span>}
+              {formErrors.status && <span className="text-red-500 text-sm mt-1 block">{formErrors.status}</span>}
             </div>
 
             <div className="mb-4">
