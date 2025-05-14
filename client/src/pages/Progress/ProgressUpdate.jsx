@@ -6,12 +6,15 @@ import Swal from "sweetalert2";
 export default function ProgressUpdate() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const today = '2025-05-14'; // Today's date in YYYY-MM-DD format
   const [formData, setFormData] = useState({
     name: "",
     topic: "",
     description: "",
     status: "",
     tag: "",
+    createdAt: "",
+    updatedAt: today // Default to today
   });
   const [file, setFile] = useState(null);
   const [existingImage, setExistingImage] = useState("");
@@ -23,6 +26,7 @@ export default function ProgressUpdate() {
     status: "",
     tag: "",
     file: "",
+    updatedAt: ""
   });
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export default function ProgressUpdate() {
         title: "Error",
         text: "User not logged in. Please log in to update progress.",
         icon: "error",
-        confirmButtonText: "OK",
+        confirmButtonText: "OK"
       });
       navigate('/login');
       return;
@@ -49,6 +53,8 @@ export default function ProgressUpdate() {
           description: res.data.description || "",
           status: res.data.status || "",
           tag: res.data.tag || "",
+          createdAt: res.data.createdAt ? res.data.createdAt.toString().substring(0, 10) : "",
+          updatedAt: res.data.updatedAt ? res.data.updatedAt.toString().substring(0, 10) : today
         });
         setExistingImage(res.data.image || "");
         setLoading(false);
@@ -60,45 +66,105 @@ export default function ProgressUpdate() {
           title: "Error",
           text: err.response?.data?.message || "Failed to load progress data.",
           icon: "error",
-          confirmButtonText: "OK",
+          confirmButtonText: "OK"
         });
       });
   }, [id, navigate]);
+
+  const validateField = (fieldName, value) => {
+    let error = '';
+
+    switch (fieldName) {
+      case 'name':
+        if (!value || value.trim() === '') {
+          error = 'Name is required';
+        }
+        break;
+      case 'topic':
+        if (!value || value.trim() === '') {
+          error = 'Topic is required';
+        }
+        break;
+      case 'description':
+        if (!value || value.trim() === '') {
+          error = 'Description is required';
+        }
+        break;
+      case 'status':
+        if (!value) {
+          error = 'Status is required';
+        }
+        break;
+      case 'tag':
+        if (value && value.length > 50) {
+          error = 'Tag cannot exceed 50 characters';
+        }
+        break;
+      case 'file':
+        if (value) {
+          if (!value.type.startsWith('image/')) {
+            error = 'File must be an image';
+          } else if (value.size > 5 * 1024 * 1024) {
+            error = 'Image size must not exceed 5MB';
+          }
+        }
+        break;
+      case 'updatedAt':
+        if (!value) {
+          error = 'Updated date is required';
+        } else {
+          const selectedDate = new Date(value);
+          const todayDate = new Date(today);
+          todayDate.setHours(0, 0, 0, 0); // Reset time for comparison
+          if (selectedDate < todayDate) {
+            error = 'Updated date must be today or later';
+          }
+        }
+        break;
+      default:
+        break;
+    }
+
+    return error;
+  };
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "file") {
       const selectedFile = files ? files[0] : null;
       setFile(selectedFile);
-      if (selectedFile && !selectedFile.type.startsWith("image/")) {
-        setFormErrors({ ...formErrors, file: "File must be an image" });
-      } else if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
-        setFormErrors({ ...formErrors, file: "Image size must not exceed 5MB" });
-      } else {
-        setFormErrors({ ...formErrors, file: "" });
-      }
+      const error = validateField('file', selectedFile);
+      setFormErrors({ ...formErrors, file: error });
     } else {
       setFormData((prevData) => ({
         ...prevData,
-        [name]: value,
+        [name]: value
       }));
+      const error = validateField(name, value);
+      setFormErrors({ ...formErrors, [name]: error });
     }
   };
 
   const handleDeleteImage = () => {
     setExistingImage("");
     setFile(null);
+    setFormErrors({ ...formErrors, file: "" });
   };
 
   const validateForm = () => {
     const errors = {};
     let isValid = true;
 
-    Object.keys(formData).forEach((field) => {
-      if (!formData[field] || formData[field].trim() === "") {
-        errors[field] = `${field} is required`;
-        isValid = false;
-      }
+    errors.name = validateField('name', formData.name);
+    errors.topic = validateField('topic', formData.topic);
+    errors.description = validateField('description', formData.description);
+    errors.status = validateField('status', formData.status);
+    errors.tag = validateField('tag', formData.tag);
+    errors.file = validateField('file', file);
+    errors.updatedAt = validateField('updatedAt', formData.updatedAt);
+
+    Object.values(errors).forEach((error) => {
+      if (error) isValid = false;
     });
 
     setFormErrors(errors);
@@ -113,7 +179,7 @@ export default function ProgressUpdate() {
         title: "Validation Error",
         text: "Please fix the errors in the form before submitting.",
         icon: "error",
-        confirmButtonText: "OK",
+        confirmButtonText: "OK"
       });
       return;
     }
@@ -124,7 +190,7 @@ export default function ProgressUpdate() {
         title: "Error",
         text: "User not logged in. Please log in to update progress.",
         icon: "error",
-        confirmButtonText: "OK",
+        confirmButtonText: "OK"
       });
       navigate('/login');
       return;
@@ -136,6 +202,8 @@ export default function ProgressUpdate() {
       description: formData.description,
       status: formData.status,
       tag: formData.tag,
+      createdAt: formData.createdAt,
+      updatedAt: formData.updatedAt
     };
 
     const data = new FormData();
@@ -144,22 +212,17 @@ export default function ProgressUpdate() {
       data.append("file", file);
     }
 
-    // Log FormData contents for debugging
-    for (let [key, value] of data.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-
     try {
       const response = await axios.put(`http://localhost:8080/progress/${id}?userId=${userId}`, data, {
         headers: {
-          "Content-Type": "multipart/form-data",
-        },
+          "Content-Type": "multipart/form-data"
+        }
       });
       Swal.fire({
         title: "Success",
         text: response.data.message || "Progress updated successfully!",
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "OK"
       }).then(() => navigate("/admin"));
     } catch (err) {
       console.error("Submit error:", err.response?.data || err.message);
@@ -168,7 +231,7 @@ export default function ProgressUpdate() {
         title: "Error",
         text: errorMessage,
         icon: "error",
-        confirmButtonText: "OK",
+        confirmButtonText: "OK"
       });
     }
   };
@@ -239,9 +302,31 @@ export default function ProgressUpdate() {
             value={formData.tag}
             onChange={handleInputChange}
             className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.tag ? "border-red-500" : "border-gray-300"}`}
-            required
           />
           {formErrors.tag && <span className="text-red-500 text-sm mt-1 block">{formErrors.tag}</span>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Created At</label>
+          <input
+            type="date"
+            name="createdAt"
+            value={formData.createdAt}
+            className="mt-1 block w-full border rounded-md shadow-sm bg-gray-100 cursor-not-allowed sm:text-sm"
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Updated At</label>
+          <input
+            type="date"
+            name="updatedAt"
+            min={today} // Restrict to today or later
+            value={formData.updatedAt}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${formErrors.updatedAt ? "border-red-500" : "border-gray-300"}`}
+            required
+          />
+          {formErrors.updatedAt && <span className="text-red-500 text-sm mt-1 block">{formErrors.updatedAt}</span>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Current Image</label>
