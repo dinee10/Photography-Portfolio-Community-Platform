@@ -26,7 +26,7 @@ export default function UpdateBlogForm() {
 
     const fetchBlog = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/blog/get/${id}`);
+        const response = await axios.get(`http://localhost:8080/blog/get/${id}`);
         setBlog({
           title: response.data.title || "",
           author: response.data.author || "",
@@ -96,7 +96,7 @@ export default function UpdateBlogForm() {
     try {
       setLoading(true);
       setError("");
-      const response = await axios.put(`http://localhost:5000/blog/update/${id}`, formData, {
+      const response = await axios.put(`http://localhost:8080/blog/update/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -192,7 +192,7 @@ export default function UpdateBlogForm() {
               blog.blogImages.map((image, index) => (
                 <div key={index} className="relative">
                   <img
-                    src={`http://localhost:5000/blog/uploads/${image}`}
+                    src={`http://localhost:8080/blog/uploads/${image}`}
                     alt={`Current ${index}`}
                     className="w-32 h-32 object-cover rounded-md border border-gray-200"
                     onError={(e) => (e.target.src = "https://via.placeholder.com/128")}
