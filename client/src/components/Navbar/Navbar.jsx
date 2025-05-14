@@ -10,7 +10,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between p-4">
         {/* Creative Navbar Text */}
         <div className="text-2xl font-bold">
-          <Link to="/user-blog" className="text-3xl font-bold mb-4 md:mb-0 text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-purple-600 hover:from-red-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300 animate-pulse-once">
+          <Link to="/home" className="text-3xl font-bold mb-4 md:mb-0 text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-purple-600 hover:from-red-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300 animate-pulse-once">
             <span className="tracking-widest">TheClicK</span>
             
           </Link>
@@ -19,8 +19,8 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex flex-1 justify-center space-x-6">
           <div className="relative group">
-            <Link to="/features" className="text-white hover:text-red-500 transition duration-300 flex items-center">
-              Features
+            <Link to="/home" className="text-white hover:text-red-500 transition duration-300 flex items-center">
+              Home
               <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
               </svg>
@@ -32,8 +32,8 @@ const Navbar = () => {
             </div>
           </div>
           <div className="relative group">
-            <Link to="/channels" className="text-white hover:text-red-500 transition duration-300 flex items-center">
-              Channels
+            <Link to="/progresslist" className="text-white hover:text-red-500 transition duration-300 flex items-center">
+              Progress
               <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
               </svg>
@@ -47,7 +47,7 @@ const Navbar = () => {
           <Link to="/pricing" className="text-white hover:text-red-500 transition duration-300">
             Pricing
           </Link>
-          <Link to="/blog" className="text-white hover:text-red-500 transition duration-300">
+          <Link to="/user-blog" className="text-white hover:text-red-500 transition duration-300">
             Blog
           </Link>
         </div>
@@ -74,13 +74,13 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-white shadow-md p-4">
-          <Link to="/features" className="block text-gray-900 py-2 hover:text-red-600">Features</Link>
-          <Link to="/channels" className="block text-gray-900 py-2 hover:text-red-600">Channels</Link>
+          <Link to="/Home" className="block text-gray-900 py-2 hover:text-red-600">Home</Link>
+          <Link to="/progresslist" className="block text-gray-900 py-2 hover:text-red-600">Progresslist</Link>
           <Link to="/pricing" className="block text-gray-900 py-2 hover:text-red-600">Pricing</Link>
-          <Link to="/blog" className="block text-gray-900 py-2 hover:text-red-600">Blog</Link>
+          <Link to="/user-blog" className="block text-gray-900 py-2 hover:text-red-600">Blog</Link>
           <div className="mt-4">
             <Link to="/login" className="block text-gray-900 py-2 hover:bg-gray-300 rounded-lg text-center">Log in</Link>
-            <Link to="/signup" className="block bg-red-600 text-white py-2 mt-2 rounded-lg text-center hover:bg-red-700">Get started now</Link>
+            <Link to="/register" className="block bg-red-600 text-white py-2 mt-2 rounded-lg text-center hover:bg-red-700">Get started now</Link>
           </div>
         </div>
       )}
