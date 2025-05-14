@@ -12,7 +12,7 @@ const Post = () => {
     name: '',
     topic: '',
     description: '',
-    category: '',
+    status: '',
     tag: '',
     createdAt: '',
   });
@@ -21,7 +21,7 @@ const Post = () => {
     name: '',
     topic: '',
     description: '',
-    category: '',
+    status: '',
     tag: '',
     createdAt: '',
     file: '',
@@ -60,9 +60,9 @@ const Post = () => {
           error = 'Description must be between 10 and 500 characters';
         }
         break;
-      case 'category':
+      case 'status':
         if (!value) {
-          error = 'Please select a category';
+          error = 'Please select a status';
         }
         break;
       case 'tag':
@@ -117,7 +117,7 @@ const Post = () => {
     errors.name = validateField('name', formData.name);
     errors.topic = validateField('topic', formData.topic);
     errors.description = validateField('description', formData.description);
-    errors.category = validateField('category', formData.category);
+    errors.status = validateField('status', formData.status);
     errors.tag = validateField('tag', formData.tag);
     errors.createdAt = validateField('createdAt', formData.createdAt);
     errors.file = validateField('file', file);
@@ -147,7 +147,7 @@ const Post = () => {
     data.append('name', formData.name);
     data.append('topic', formData.topic);
     data.append('description', formData.description);
-    data.append('category', formData.category);
+    data.append('status', formData.status);
     data.append('tag', formData.tag);
     data.append('createdAt', formData.createdAt);
     data.append('file', file);
@@ -168,7 +168,7 @@ const Post = () => {
           name: '',
           topic: '',
           description: '',
-          category: '',
+          status: '',
           tag: '',
           createdAt: '',
         });
@@ -250,26 +250,26 @@ const Post = () => {
               )}
             </div>
 
-            {/* Category Field */}
+            {/* Status Field */}
             <div className="mb-4">
-              <label htmlFor="category" className="block text-gray-800 font-semibold mb-2">
-                Category
+              <label htmlFor="status" className="block text-gray-800 font-semibold mb-2">
+                Status
               </label>
               <select
-                name="category"
+                name="status"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.category ? "border-red-500" : "border-gray-300"
+                  formErrors.status ? "border-red-500" : "border-gray-300"
                 }`}
-                value={formData.category}
+                value={formData.status}
                 onChange={handleChange}
               >
-                <option value="">Select Category</option>
+                <option value="">Select Status</option>
                 <option value="Potrait">Potrait</option>
                 <option value="Landscape">Landscape</option>
                 <option value="Nature">Nature</option>
               </select>
-              {formErrors.category && (
-                <span className="text-red-500 text-sm mt-1 block">{formErrors.category}</span>
+              {formErrors.status && (
+                <span className="text-red-500 text-sm mt-1 block">{formErrors.status}</span>
               )}
             </div>
 
