@@ -17,7 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -34,6 +36,7 @@ public class LprogressController {
     private ObjectMapper objectMapper;
 
     private final String UPLOAD_DIR = "src/main/uploads/";
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @PostMapping("/progress")
     public LprogressModel newLprogressModel(
@@ -43,7 +46,8 @@ public class LprogressController {
             @RequestParam("status") String status,
             @RequestParam("tag") String tag,
             @RequestParam("file") MultipartFile file,
-            @RequestParam("userId") Long userId) throws IOException {
+            @RequestParam("userId") Long userId,
+            @RequestParam("createdAt") String createdAt) throws IOException {
 
         UserModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
@@ -62,8 +66,13 @@ public class LprogressController {
         newLprogressModel.setStatus(status);
         newLprogressModel.setTag(tag);
         newLprogressModel.setImage(imageName);
-        newLprogressModel.setCreatedAt(LocalDateTime.now());
-        newLprogressModel.setUpdatedAt(LocalDateTime.now());
+        try {
+            LocalDate parsedDate = LocalDate.parse(createdAt, dateFormatter);
+            newLprogressModel.setCreatedAt(parsedDate);
+            newLprogressModel.setUpdatedAt(parsedDate); // Set updatedAt to createdAt on creation
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid createdAt date format. Use YYYY-MM-DD.");
+        }
         newLprogressModel.setUser(user);
 
         return lprogressRepository.save(newLprogressModel);
@@ -145,7 +154,11 @@ public class LprogressController {
                 existingProgress.setDescription(newProgress.getDescription() != null ? newProgress.getDescription() : existingProgress.getDescription());
                 existingProgress.setStatus(newProgress.getStatus() != null ? newProgress.getStatus() : existingProgress.getStatus());
                 existingProgress.setTag(newProgress.getTag() != null ? newProgress.getTag() : existingProgress.getTag());
-                existingProgress.setUpdatedAt(LocalDateTime.now());
+                existingProgress.setCreatedAt(newProgress.getCreatedAt() != null ? newProgress.getCreatedAt() : existingProgress.getCreatedAt());
+                if (newProgress.getUpdatedAt() == null) {
+                    throw new IllegalArgumentException("UpdatedAt date is required.");
+                }
+                existingProgress.setUpdatedAt(newProgress.getUpdatedAt());
 
                 if (file != null && !file.isEmpty()) {
                     try {
@@ -184,6 +197,9 @@ public class LprogressController {
         } catch (LprogressNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Error: Progress not found or not owned by user - " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: Failed to update progress - " + e.getMessage());
@@ -220,7 +236,7 @@ public class LprogressController {
                     .body("Error: User not found - " + e.getMessage());
         } catch (LprogressNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Error: Progress not found or not owned byyss user - " + e.getMessage());
+                    .body("Error: Progress not found or not owned by user - " + e.getMessage());
         }
     }
 }
