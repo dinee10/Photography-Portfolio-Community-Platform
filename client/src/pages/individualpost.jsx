@@ -196,7 +196,7 @@ export default function IndividualPost() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-2">
-                  {post.category || 'General'}
+                  {post.status || 'General'}
                 </span>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                   {post.name || "Untitled Post"}
