@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Post from './pages/AddPost';
@@ -7,13 +8,20 @@ import ListPost from './pages/Postlist'
 import Individualpost from './pages/individualpost';
 
 
+
+
+import AppRoutes from './routes/Approutes'
+
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
+
+ 
+   <>
       <div>
-      <BrowserRouter>
+  
+      <AppRoutes />
+   <BrowserRouter>
         <Routes>
           <Route path='/post' element={<Post />} />
           <Route path='/addpost' element={<Post />} />
@@ -25,8 +33,10 @@ function App() {
           </BrowserRouter>
       </div>
    
+
     </>
   )
 }
 
-export default App;
+export default App
+
