@@ -1,9 +1,7 @@
 package server.controller;
 
 import server.exception.PostNotFoundException;
-import server.model.Comment;
 import server.model.PostModel;
-import server.repository.CommentRepository;
 import server.repository.PostRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
