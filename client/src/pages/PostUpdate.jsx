@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 
 const nameRegex = /^[A-Za-z\s]+$/;
 
-function ProgressUpdate() {
+function PostUpdate() {
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -14,7 +14,7 @@ function ProgressUpdate() {
     name: '',
     topic: '',
     description: '',
-    status: '',
+    category: '',
     tag: '',
   });
   const [file, setFile] = useState(null);
@@ -25,7 +25,7 @@ function ProgressUpdate() {
     name: "",
     topic: "",
     description: "",
-    status: "",
+    category: "",
     tag: "",
     file: "",
   });
@@ -40,7 +40,7 @@ function ProgressUpdate() {
           name: progress.name || '',
           topic: progress.topic || '',
           description: progress.description || '',
-          status: progress.status || '',
+          category: progress.category || '',
           tag: progress.tag || '',
         });
         setExistingImage(progress.image || "");
@@ -113,7 +113,7 @@ function ProgressUpdate() {
       name: formData.name,
       topic: formData.topic,
       description: formData.description,
-      status: formData.status,
+      category: formData.category,
       tag: formData.tag,
       updatedAt: new Date().toISOString(),
     };
@@ -201,20 +201,20 @@ function ProgressUpdate() {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="status" className="block text-gray-800 font-semibold mb-2">Status</label>
+              <label htmlFor="category" className="block text-gray-800 font-semibold mb-2">Category</label>
               <select
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.status ? "border-red-500" : "border-gray-300"}`}
-                id="status"
-                name="status"
-                value={formData.status}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.category ? "border-red-500" : "border-gray-300"}`}
+                id="category"
+                name="category"
+                value={formData.category}
                 onChange={handleChange}
               >
-                <option value="">Select Status</option>
+                <option value="">Select Category</option>
                 <option value="Potrait">Potrait</option>
                 <option value="Landscape">Landscape</option>
                 <option value="Nature">Nature</option>
               </select>
-              {formErrors.status && <span className="text-red-500 text-sm mt-1 block">{formErrors.status}</span>}
+              {formErrors.category && <span className="text-red-500 text-sm mt-1 block">{formErrors.category}</span>}
             </div>
 
             <div className="mb-4">
@@ -252,4 +252,4 @@ function ProgressUpdate() {
   );
 }
 
-export default ProgressUpdate;
+export default PostUpdate;
