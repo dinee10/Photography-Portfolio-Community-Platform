@@ -10,6 +10,7 @@ function ProgressL() {
   const [deleteError, setDeleteError] = useState(null);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+  const minDate = new Date('2025-05-14'); // Minimum allowed date (today)
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
@@ -28,7 +29,19 @@ function ProgressL() {
       const res = await axios.get('http://localhost:8080/progress', {
         params: { userId }
       });
-      setProgressList(res.data);
+      // Validate createdAt and updatedAt dates
+      const validatedProgress = res.data.map((progress) => {
+        const createdAtDate = progress.createdAt ? new Date(progress.createdAt) : null;
+        const updatedAtDate = progress.updatedAt ? new Date(progress.updatedAt) : null;
+        let updatedProgress = { ...progress };
+        
+        if (updatedAtDate && updatedAtDate < minDate) {
+          console.warn("Invalid updatedAt date:", progress.updatedAt);
+          updatedProgress.updatedAt = null; // Mark as missing
+        }
+        return updatedProgress;
+      });
+      setProgressList(validatedProgress);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching progress data:', err);
@@ -140,7 +153,14 @@ function ProgressL() {
                 <p className="text-gray-600 dark:text-gray-400">Status: {progress.status}</p>
                 <p className="text-gray-600 dark:text-gray-400">Tag: {progress.tag}</p>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Created At: {new Date(progress.createdAt).toLocaleString()}
+                  Created At: {progress.createdAt
+                    ? new Date(progress.createdAt).toLocaleDateString()
+                    : "Not available"}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Updated At: {progress.updatedAt
+                    ? new Date(progress.updatedAt).toLocaleDateString()
+                    : "Not available"}
                 </p>
                 {progress.user && (
                   <p className="text-gray-600 dark:text-gray-400">
