@@ -8,9 +8,9 @@ import axios from "axios";
 import AddProgress from "../Progress/AddProgress";
 import Progress from "../Progress/Progress";
 import UserProfile from "../UserProfile/UserProfile";
-import Spinner from "../../component/spinner/spinner";
+import Spinner from "../../components/spinner/spinner";
 
-const Admin = () => {
+const User = () => {
   //const { user, setUser, loading, error } = useContext(UserContext);
   const [activeTab, setActiveTab] = useState('Manage Progress');
   const [loading, setLoading] = useState(true);
