@@ -19,6 +19,11 @@ import TourismBlog from "../pages/Ishanka/UserBlog"
 import IndividualBlog from "../pages/Ishanka/InduvidualBlog";
 import Admin from "../pages/dashboard/Admin";
 import UpdateBlogDashboard from "../pages/dashboard/Ishanka dahsbaord/UpdateBlogDashbaord";
+import Post from '../pages/AddPost';
+import PostList from '../pages/Post';
+import PostUpdate from '../pages/PostUpdate';
+import ListPost from '../pages/Postlist'
+import Individualpost from '../pages/individualpost';
 
 const AppRoutes = () => {
   return (
@@ -55,6 +60,13 @@ const AppRoutes = () => {
                         //</ProtectedRoute>
                     } 
                 />
+
+                 <Route path='/post' element={<Post />} />
+          <Route path='/addpost' element={<Post />} />
+          <Route path='/postlist' element={<PostList />} />
+          <Route path='/update/:id' element={<PostUpdate />} />
+          <Route path='/listpost' element={<ListPost />} />
+          <Route path='/post/:id'element= {<Individualpost/>}/>
 
           </Routes>
 </Router>   
