@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5175")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
     @Autowired
