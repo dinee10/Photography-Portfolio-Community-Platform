@@ -27,6 +27,7 @@ const AnimatedText = ({ text, className }) => {
 const ProgressCard = ({ progress, index }) => {
   const placeholderImage =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==';
+  const minDate = new Date('2025-05-14'); // Minimum allowed date (today)
 
   const mainImage = progress.image
     ? `http://localhost:8080/uploads/${progress.image}`
@@ -37,11 +38,13 @@ const ProgressCard = ({ progress, index }) => {
       ? `${progress.description.substring(0, 120)}...`
       : progress.description;
 
-  const createdDate = new Date(progress.createdAt);
-  const daysAgo = Math.floor((Date.now() - createdDate) / (1000 * 60 * 60 * 24));
-  const metadata = `Status: ${progress.status} • ${
-    daysAgo === 0 ? 'Today' : `${daysAgo} day${daysAgo > 1 ? 's' : ''} ago`
-  }`;
+  const createdDate = progress.createdAt
+    ? new Date(progress.createdAt).toLocaleDateString()
+    : "Not available";
+  const updatedDate = progress.updatedAt
+    ? new Date(progress.updatedAt).toLocaleDateString()
+    : "Not available";
+  const metadata = `Status: ${progress.status} • Created: ${createdDate} • Updated: ${updatedDate}`;
 
   return (
     <Link
@@ -96,12 +99,28 @@ const ProgressList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const minDate = new Date('2025-05-14'); // Minimum allowed date (today)
 
   useEffect(() => {
     const fetchProgress = async () => {
       try {
         const response = await axios.get('http://localhost:8080/progress/all');
-        setProgressList(response.data);
+        // Validate createdAt and updatedAt dates
+        const validatedProgress = response.data.map((progress) => {
+          const createdAtDate = progress.createdAt ? new Date(progress.createdAt) : null;
+          const updatedAtDate = progress.updatedAt ? new Date(progress.updatedAt) : null;
+          let updatedProgress = { ...progress };
+          if (!createdAtDate || createdAtDate < minDate) {
+            console.warn("Invalid or missing createdAt date:", progress.createdAt);
+            updatedProgress.createdAt = null; // Mark as missing
+          }
+          if (updatedAtDate && updatedAtDate < minDate) {
+            console.warn("Invalid updatedAt date:", progress.updatedAt);
+            updatedProgress.updatedAt = null; // Mark as missing
+          }
+          return updatedProgress;
+        });
+        setProgressList(validatedProgress);
       } catch (err) {
         setError('Failed to fetch progress data. Please try again later.');
         console.error('Error fetching progress data:', err);
@@ -203,7 +222,7 @@ const ProgressList = () => {
             placeholder="Search progress..."
             className="w-full py-2 pl-10 pr-4 text-gray-700 bg-gray-100 border border-red-500 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-500 focus:bg-white shadow-sm"
           />
-          <div className="absolute inset-y-0 items-center'inf-0 left-0 flex items-center pl-3">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
             <Search className="text-gray-500" size={20} />
           </div>
         </div>
