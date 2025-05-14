@@ -14,7 +14,7 @@ public class PostModel {
     private String name;
     private String topic;
     private String description;
-    private String status;            // e.g., Potrait, Lanscape, Nature
+    private String category;            // e.g., Potrait, Lanscape, Nature
     private String image;
     private String tag;
 
@@ -25,12 +25,12 @@ public class PostModel {
 
     }
 
-    public PostModel(String name, Long id, String topic, String description, String status, String image, String tag, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public PostModel(String name, Long id, String topic, String description, String category, String image, String tag, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.name = name;
         this.id = id;
         this.topic = topic;
         this.description = description;
-        this.status = status;
+        this.category = category;
         this.image = image;
         this.tag = tag;
         this.createdAt = createdAt;
@@ -69,12 +69,12 @@ public class PostModel {
         this.description = description;
     }
 
-    public String getStatus() {
-        return status;
+    public String getCategory() {
+        return category;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getImage() {
