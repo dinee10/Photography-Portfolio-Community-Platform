@@ -182,7 +182,7 @@ export default function AddBlog() {
     images.forEach((image) => data.append("newImages", image));
 
     try {
-      const response = await axios.post("http://localhost:5000/blog/add", data, {
+      const response = await axios.post("http://localhost:8080/blog/add", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSuccess(response.data.message || "Blog added successfully!");
