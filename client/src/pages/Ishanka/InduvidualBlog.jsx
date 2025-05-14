@@ -27,7 +27,7 @@ export default function IndividualBlog() {
       return;
     }
     axios
-      .get(`http://localhost:5000/blog/get/${id}`)
+      .get(`http://localhost:8080/blog/get/${id}`)
       .then((res) => {
         console.log("Blog data fetched:", res.data);
         setBlog(res.data);
@@ -151,7 +151,7 @@ export default function IndividualBlog() {
       let yPosition = 70;
       if (blog.blogImages && blog.blogImages.length > 0) {
         const selectedImage = blog.blogImages[selectedImageIndex];
-        const imageUrl = `http://localhost:5000/blog/uploads/${selectedImage}`;
+        const imageUrl = `http://localhost:8080/blog/uploads/${selectedImage}`;
         console.log("Attempting to load selected blog image from:", imageUrl);
         try {
           const imageBase64 = await loadImageAsBase64(imageUrl);
@@ -257,7 +257,7 @@ export default function IndividualBlog() {
               {blog.blogImages.map((image, index) => (
                 <SwiperSlide key={index}>
                   <img
-                    src={`http://localhost:5000/blog/uploads/${image}`}
+                    src={`http://localhost:8080/blog/uploads/${image}`}
                     alt={`Slide ${index + 1}`}
                     className="w-full h-auto object-cover rounded-lg cursor-pointer"
                     onError={(e) => (e.target.src = "https://via.placeholder.com/600x400")}
