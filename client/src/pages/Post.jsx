@@ -115,7 +115,7 @@ const PostList = () => {
                       <h3 className="card-title">{progress.name}</h3>
                       <p className="card-text"><strong>Topic:</strong> {progress.topic}</p>
                       <p className="card-text"><strong>Description:</strong> {progress.description}</p>
-                      <p className="card-text"><strong>Category:</strong> {progress.category}</p>
+                      <p className="card-text"><strong>Status:</strong> {progress.status}</p>
                       <p className="card-text"><strong>Tag:</strong> {progress.tag}</p>
                       {progress.image && (
                         <img
