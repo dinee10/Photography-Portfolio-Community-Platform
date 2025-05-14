@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Swal from 'sweetalert2';
-import Navbar from '../../component/Navbar/Navbar';
+import Navbar from '../../components/Navbar/Navbar';
 
 const AnimatedText = ({ text, className }) => {
   const words = text.split(' ');
