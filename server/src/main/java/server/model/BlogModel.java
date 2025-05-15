@@ -1,9 +1,6 @@
 package server.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "blog_model")
@@ -12,8 +9,6 @@ public class BlogModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String blogId;
 
     private String title;
 
@@ -24,16 +19,11 @@ public class BlogModel {
 
     private String category;
 
-    @ElementCollection
-    private List<String> blogImages = new ArrayList<>();
+    private String image;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserModel user;
 
     // Getters and setters
     public Long getId() {
@@ -42,14 +32,6 @@ public class BlogModel {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getBlogId() {
-        return blogId;
-    }
-
-    public void setBlogId(String blogId) {
-        this.blogId = blogId;
     }
 
     public String getTitle() {
@@ -84,19 +66,19 @@ public class BlogModel {
         this.category = category;
     }
 
-    public List<String> getBlogImages() {
-        return blogImages;
+    public String getImage() {
+        return image;
     }
 
-    public void setBlogImages(List<String> blogImages) {
-        this.blogImages = blogImages;
+    public void setImage(String image) {
+        this.image = image;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public UserModel getUser() {
+        return user;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setUser(UserModel user) {
+        this.user = user;
     }
 }
