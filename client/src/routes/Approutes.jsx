@@ -64,7 +64,7 @@ const AppRoutes = () => {
                  <Route path='/post' element={<Post />} />
           <Route path='/addpost' element={<Post />} />
           <Route path='/postlist' element={<PostList />} />
-          <Route path='/update/:id' element={<PostUpdate />} />
+          <Route path='/post/update/:id' element={<PostUpdate />} />
           <Route path='/listpost' element={<ListPost />} />
           <Route path='/post/:id'element= {<Individualpost/>}/>
 
