@@ -9,6 +9,10 @@ import AddProgress from "../Progress/AddProgress";
 import Progress from "../Progress/Progress";
 import UserProfile from "../UserProfile/UserProfile";
 import Spinner from "../../components/spinner/spinner";
+import AddBlog from "../Ishanka/AddBlog";
+import BlogList from "../Ishanka/BlogList";
+import AddPost from "../AddPost";
+import Post from "../Post";
 
 const User = () => {
   //const { user, setUser, loading, error } = useContext(UserContext);
@@ -48,7 +52,7 @@ const User = () => {
       <aside className="w-64 bg-gray-800 text-white flex flex-col">
         <div className="p-4 text-xl font-bold bg-gray-900">User Dashboard</div>
         <nav className="flex-1 px-2 py-4">
-          {['Manage Progress', 'Add Progress', 'User Profile'].map((tab) => (
+          {['Manage Progress', 'Add Progress','Manage Blog', 'Add Blog', 'Manage Post','Add Post', 'User Profile'].map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
@@ -86,6 +90,10 @@ const User = () => {
             {activeTab === 'Manage Progress' && <Progress />}
             {activeTab === 'Add Progress' && <AddProgress />} 
             {activeTab === 'User Profile' && <UserProfile />} 
+            {activeTab === 'Manage Blog' && <BlogList />}
+            {activeTab === 'Add Blog' && <AddBlog />} 
+            {activeTab === 'Add Post' && <AddPost />} 
+            {activeTab === 'Manage Post' && <Post />}  
             
 
           </>
