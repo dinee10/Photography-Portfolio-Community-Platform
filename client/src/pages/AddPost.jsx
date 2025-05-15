@@ -1,20 +1,21 @@
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-
 // Name regex: letters and spaces only
 const nameRegex = /^[A-Za-z\s]+$/;
 
-const Post = () => {
+const AddPost = () => {
+  const today = '2025-05-15'; // Today's date in YYYY-MM-DD format
   const [formData, setFormData] = useState({
     name: '',
     topic: '',
     description: '',
     status: '',
     tag: '',
-    createdAt: '',
+    createdAt: today,
   });
   const [file, setFile] = useState(null);
   const [formErrors, setFormErrors] = useState({
@@ -23,14 +24,11 @@ const Post = () => {
     description: '',
     status: '',
     tag: '',
-    createdAt: '',
     file: '',
+    createdAt: '',
   });
   const navigate = useNavigate();
-
-  // Get today's date in YYYY-MM-DD format for the min attribute
-  const today = new Date();
-  const minDate = today.toISOString().split('T')[0]; // Formats as "2025-04-26"
+  const userId = localStorage.getItem('userId');
 
   // Validate a single field
   const validateField = (fieldName, value) => {
@@ -70,11 +68,6 @@ const Post = () => {
           error = 'Tag cannot exceed 50 characters';
         }
         break;
-      case 'createdAt':
-        if (!value) {
-          error = 'Please select a date';
-        }
-        break;
       case 'file':
         if (!value) {
           error = 'Image is required';
@@ -82,6 +75,18 @@ const Post = () => {
           error = 'File must be an image (JPEG, PNG, GIF)';
         } else if (value.size > 5 * 1024 * 1024) {
           error = 'Image size must not exceed 5MB';
+        }
+        break;
+      case 'createdAt':
+        if (!value) {
+          error = 'Created date is required';
+        } else {
+          const selectedDate = new Date(value);
+          const todayDate = new Date(today);
+          todayDate.setHours(0, 0, 0, 0);
+          if (selectedDate < todayDate) {
+            error = 'Created date must be today or later';
+          }
         }
         break;
       default:
@@ -119,8 +124,8 @@ const Post = () => {
     errors.description = validateField('description', formData.description);
     errors.status = validateField('status', formData.status);
     errors.tag = validateField('tag', formData.tag);
-    errors.createdAt = validateField('createdAt', formData.createdAt);
     errors.file = validateField('file', file);
+    errors.createdAt = validateField('createdAt', formData.createdAt);
 
     Object.values(errors).forEach((error) => {
       if (error) isValid = false;
@@ -132,6 +137,17 @@ const Post = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!userId) {
+      Swal.fire({
+        title: 'Error',
+        text: 'You must be logged in to add a post.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      navigate('/login');
+      return;
+    }
 
     if (!validateForm()) {
       Swal.fire({
@@ -149,8 +165,9 @@ const Post = () => {
     data.append('description', formData.description);
     data.append('status', formData.status);
     data.append('tag', formData.tag);
-    data.append('createdAt', formData.createdAt);
     data.append('file', file);
+    data.append('userId', userId);
+    data.append('createdAt', formData.createdAt);
 
     try {
       await axios.post('http://localhost:8080/post', data, {
@@ -161,8 +178,9 @@ const Post = () => {
 
       Swal.fire({
         title: 'Success',
-        text: 'Progress saved successfully',
+        text: 'Post saved successfully',
         icon: 'success',
+        confirmButtonText: 'OK',
       }).then(() => {
         setFormData({
           name: '',
@@ -170,40 +188,40 @@ const Post = () => {
           description: '',
           status: '',
           tag: '',
-          createdAt: '',
+          createdAt: today,
         });
         setFile(null);
         setFormErrors({});
         navigate('/postlist');
       });
     } catch (err) {
-  
+      console.error('Error saving post:', err);
+      const errorMessage = err.response?.data || 'Failed to save post. Please try again.';
       Swal.fire({
         title: 'Error',
-        text: 'Failed to save progress. Please try again.',
+        text: errorMessage,
         icon: 'error',
+        confirmButtonText: 'OK',
       });
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-800">
-   
       <div className="container mx-auto py-10 px-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Log New Post</h1>
-          <form onSubmit={handleSubmit}>
-            {/* Name Field */}
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-800 font-semibold mb-2">
+        <div className="bg-gray-900 text-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Add New Post</h1>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium">
                 Name
               </label>
               <input
                 type="text"
                 name="name"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.name ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.name ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
                 value={formData.name}
                 onChange={handleChange}
               />
@@ -212,17 +230,16 @@ const Post = () => {
               )}
             </div>
 
-            {/* Topic Field */}
-            <div className="mb-4">
-              <label htmlFor="topic" className="block text-gray-800 font-semibold mb-2">
+            <div>
+              <label htmlFor="topic" className="block text-sm font-medium">
                 Topic
               </label>
               <input
                 type="text"
                 name="topic"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.topic ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.topic ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
                 value={formData.topic}
                 onChange={handleChange}
               />
@@ -231,16 +248,15 @@ const Post = () => {
               )}
             </div>
 
-            {/* Description Field */}
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-gray-800 font-semibold mb-2">
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium">
                 Description
               </label>
               <textarea
                 name="description"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.description ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.description ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
                 value={formData.description}
                 onChange={handleChange}
                 rows="5"
@@ -250,21 +266,20 @@ const Post = () => {
               )}
             </div>
 
-            {/* Status Field */}
-            <div className="mb-4">
-              <label htmlFor="status" className="block text-gray-800 font-semibold mb-2">
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium">
                 Status
               </label>
               <select
                 name="status"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.status ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.status ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
                 value={formData.status}
                 onChange={handleChange}
               >
                 <option value="">Select Status</option>
-                <option value="Potrait">Potrait</option>
+                <option value="Portrait">Portrait</option>
                 <option value="Landscape">Landscape</option>
                 <option value="Nature">Nature</option>
               </select>
@@ -273,17 +288,16 @@ const Post = () => {
               )}
             </div>
 
-            {/* Tag Field */}
-            <div className="mb-4">
-              <label htmlFor="tag" className="block text-gray-800 font-semibold mb-2">
+            <div>
+              <label htmlFor="tag" className="block text-sm font-medium">
                 Tag (Optional)
               </label>
               <input
                 type="text"
                 name="tag"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.tag ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.tag ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
                 value={formData.tag}
                 onChange={handleChange}
               />
@@ -292,50 +306,48 @@ const Post = () => {
               )}
             </div>
 
-            {/* File Upload Field */}
-            <div className="mb-4">
-              <label htmlFor="file" className="block text-gray-800 font-semibold mb-2">
-                Upload Image
-              </label>
-              <input
-                type="file"
-                name="file"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.file ? "border-red-500" : "border-gray-300"
-                }`}
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-              {formErrors.file && (
-                <span className="text-red-500 text-sm mt-1 block">{formErrors.file}</span>
-              )}
-            </div>
-
-            {/* Created At Field */}
-            <div className="mb-4">
-              <label htmlFor="createdAt" className="block text-gray-800 font-semibold mb-2">
+            <div>
+              <label htmlFor="createdAt" className="block text-sm font-medium">
                 Created At
               </label>
               <input
                 type="date"
                 name="createdAt"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formErrors.createdAt ? "border-red-500" : "border-gray-300"
-                }`}
+                min={today}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.createdAt ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
                 value={formData.createdAt}
                 onChange={handleChange}
-                min={minDate}
               />
               {formErrors.createdAt && (
                 <span className="text-red-500 text-sm mt-1 block">{formErrors.createdAt}</span>
               )}
             </div>
 
-            {/* Submit Button */}
+            <div>
+              <label htmlFor="file" className="block text-sm font-medium">
+                Upload Image
+              </label>
+              <input
+                type="file"
+                name="file"
+                className={`mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  formErrors.file ? 'border-red-500' : 'border-gray-600'
+                } bg-gray-700 text-white`}
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+              {formErrors.file && (
+                <span className=" dostarcz: red-500 text-sm mt-1 block">{formErrors.file}</span>
+              )}
+            </div>
+
             <div className="text-center">
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-300"
+              >
                 Submit
               </button>
             </div>
@@ -346,5 +358,4 @@ const Post = () => {
   );
 };
 
-export default Post;
-
+export default AddPost;
