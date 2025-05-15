@@ -28,13 +28,20 @@ function BlogList() {
     const confirmed = window.confirm('Are you sure you want to delete this blog?');
     if (confirmed) {
       try {
-        const res = await axios.delete(`http://localhost:8080/blog/${id}`);
+        const userId = localStorage.getItem('userId'); // Adjust based on your auth setup
+        if (!userId) {
+          throw new Error('User not authenticated. Please log in.');
+        }
+
+        const res = await axios.delete(`http://localhost:8080/blog/${id}`, {
+          params: { userId },
+        });
         alert(res.data.message || 'Blog deleted successfully!');
         setDeleteError(null);
         fetchBlogs();
       } catch (error) {
         console.error('Error deleting blog:', error);
-        const errorMessage = error.response?.data?.message || 'Blog deletion failed. Please try again.';
+        const errorMessage = error.response?.data?.error || error.message || 'Blog deletion failed. Please try again.';
         setDeleteError(errorMessage);
       }
     }
@@ -70,9 +77,9 @@ function BlogList() {
               className="flex items-start p-4 bg-white rounded-md shadow-md dark:bg-gray-800"
             >
               <div className="flex-shrink-0 mr-4">
-                {blog.blogImages && blog.blogImages.length > 0 ? (
+                {blog.image ? (
                   <img
-                    src={`http://localhost:8080/blog/uploads/${blog.blogImages[0]}`}
+                    src={`http://localhost:8080/blog/uploads/${blog.image}`}
                     alt={blog.title}
                     className="w-32 h-32 object-cover rounded-md border border-gray-300"
                     onError={(e) => (e.target.src = 'https://via.placeholder.com/128')}
