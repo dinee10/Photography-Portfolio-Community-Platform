@@ -10,29 +10,29 @@ export default function AddBlog() {
     author: "",
     category: "AI",
   });
-  const [images, setImages] = useState([]);
+  const [image, setImage] = useState(null); // Changed to single image
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [charCount, setCharCount] = useState(0);
   const MAX_CONTENT_LENGTH = 65535;
-  
+
   // Form validation states
   const [validationErrors, setValidationErrors] = useState({
     title: "",
     content: "",
     author: "",
-    images: "Images are required"  // Default error since images are now required
+    image: "", // Optional, so no default error
   });
   const [touched, setTouched] = useState({
     title: false,
     content: false,
     author: false,
-    images: false
+    image: false,
   });
 
   const validateField = (name, value) => {
     let errorMessage = "";
-    
+
     switch (name) {
       case "title":
         if (!value.trim()) {
@@ -43,7 +43,7 @@ export default function AddBlog() {
           errorMessage = "Title cannot exceed 255 characters";
         }
         break;
-        
+
       case "content":
         if (!value.trim()) {
           errorMessage = "Content is required";
@@ -53,7 +53,7 @@ export default function AddBlog() {
           errorMessage = `Content cannot exceed ${MAX_CONTENT_LENGTH} characters`;
         }
         break;
-        
+
       case "author":
         if (!value.trim()) {
           errorMessage = "Author name is required";
@@ -65,31 +65,23 @@ export default function AddBlog() {
           errorMessage = "Author name should contain only letters, spaces, dots, and hyphens";
         }
         break;
-        
-      case "images":
-        if (value.length === 0) {
-          errorMessage = "At least one image is required";
-        } else if (value.length > 0) {
-          const invalidImages = value.filter(img => {
-            const fileType = img.type.split('/')[0];
-            const fileSize = img.size / (1024 * 1024); // size in MB
-            return fileType !== 'image' || fileSize > 5;
-          });
-          
-          if (invalidImages.length > 0) {
-            errorMessage = "All files must be images under 5MB";
-          }
-          
-          if (value.length > 5) {
-            errorMessage = "Maximum 5 images allowed";
+
+      case "image":
+        if (value) {
+          const fileType = value.type.split('/')[0];
+          const fileSize = value.size / (1024 * 1024); // Size in MB
+          if (fileType !== 'image') {
+            errorMessage = "File must be an image";
+          } else if (fileSize > 5) {
+            errorMessage = "Image must be under 5MB";
           }
         }
         break;
-        
+
       default:
         break;
     }
-    
+
     return errorMessage;
   };
 
@@ -99,45 +91,45 @@ export default function AddBlog() {
       setCharCount(value.length);
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Validate field if it has been touched
     if (touched[name]) {
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        [name]: validateField(name, value)
+        [name]: validateField(name, value),
       }));
     }
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    
+
     // Mark field as touched
-    setTouched(prev => ({
+    setTouched((prev) => ({
       ...prev,
-      [name]: true
+      [name]: true,
     }));
-    
+
     // Validate on blur
-    setValidationErrors(prev => ({
+    setValidationErrors((prev) => ({
       ...prev,
-      [name]: validateField(name, value)
+      [name]: validateField(name, value),
     }));
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages(files);
-    
+    const file = e.target.files[0]; // Only take the first file
+    setImage(file);
+
     // Mark as touched and validate
-    setTouched(prev => ({
+    setTouched((prev) => ({
       ...prev,
-      images: true
+      image: true,
     }));
-    
-    setValidationErrors(prev => ({
+
+    setValidationErrors((prev) => ({
       ...prev,
-      images: validateField("images", files)
+      image: validateField("image", file),
     }));
   };
 
@@ -146,31 +138,38 @@ export default function AddBlog() {
       title: validateField("title", formData.title),
       content: validateField("content", formData.content),
       author: validateField("author", formData.author),
-      images: validateField("images", images)
+      image: validateField("image", image),
     };
-    
+
     setValidationErrors(errors);
-    
+
     // Mark all fields as touched
     setTouched({
       title: true,
       content: true,
       author: true,
-      images: true
+      image: true,
     });
-    
+
     // Return true if no errors
-    return !Object.values(errors).some(error => error !== "");
+    return !Object.values(errors).some((error) => error !== "");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    
+
     // Validate all fields before submission
     if (!validateForm()) {
       setError("Please fix all validation errors before submitting");
+      return;
+    }
+
+    // Retrieve userId from localStorage (or other auth mechanism)
+    const userId = localStorage.getItem("userId"); // Adjust based on your auth setup
+    if (!userId) {
+      setError("User not authenticated. Please log in.");
       return;
     }
 
@@ -179,7 +178,10 @@ export default function AddBlog() {
     data.append("content", formData.content.trim());
     data.append("author", formData.author.trim());
     data.append("category", formData.category.toLowerCase());
-    images.forEach((image) => data.append("newImages", image));
+    data.append("userId", userId);
+    if (image) {
+      data.append("file", image);
+    }
 
     try {
       const response = await axios.post("http://localhost:8080/blog/add", data, {
@@ -187,20 +189,20 @@ export default function AddBlog() {
       });
       setSuccess(response.data.message || "Blog added successfully!");
       setFormData({ title: "", content: "", author: "", category: "AI" });
-      setImages([]);
+      setImage(null);
       setCharCount(0);
       // Reset validation states
       setValidationErrors({
         title: "",
         content: "",
         author: "",
-        images: ""
+        image: "",
       });
       setTouched({
         title: false,
         content: false,
         author: false,
-        images: false
+        image: false,
       });
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
@@ -210,7 +212,7 @@ export default function AddBlog() {
   };
 
   // Check if form has any errors
-  const hasErrors = Object.values(validationErrors).some(error => error !== "");
+  const hasErrors = Object.values(validationErrors).some((error) => error !== "");
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -326,63 +328,53 @@ export default function AddBlog() {
             </select>
           </div>
           <div>
-            <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-1">
-              Images <span className="text-red-500">*</span> <span className="text-gray-500 text-xs">(Max 5 images, 5MB each)</span>
+            <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
+              Image <span className="text-gray-500 text-xs">(Optional, max 5MB)</span>
             </label>
-            <div className={`relative border-2 ${validationErrors.images && touched.images ? "border-red-500" : "border-dashed border-gray-300"} rounded-lg p-4 transition-all hover:bg-gray-50`}>
+            <div className={`relative border-2 ${validationErrors.image && touched.image ? "border-red-500" : "border-dashed border-gray-300"} rounded-lg p-4 transition-all hover:bg-gray-50`}>
               <input
                 type="file"
-                id="images"
-                name="newImages"
+                id="image"
+                name="file"
                 onChange={handleImageChange}
                 className={`w-full px-4 py-2.5 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-indigo-50 file:text-indigo-600 file:font-medium hover:file:bg-indigo-100 transition-colors`}
-                multiple
                 accept="image/*"
-                required
               />
               <div className="text-center mt-2">
                 <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                   <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <p className="mt-1 text-sm text-gray-600">Drag and drop image files here, or click to select files</p>
+                <p className="mt-1 text-sm text-gray-600">Drag and drop an image file here, or click to select a file</p>
                 <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
               </div>
             </div>
-            {images.length > 0 && (
+            {image && (
               <div className="mt-3 flex flex-wrap gap-2">
-                {images.map((img, index) => (
-                  <div key={index} className="relative bg-gray-100 rounded-md p-2 w-20 h-20 flex items-center justify-center overflow-hidden">
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-md">
-                      <button 
-                        type="button" 
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => {
-                          const newImages = [...images];
-                          newImages.splice(index, 1);
-                          setImages(newImages);
-                          if (newImages.length === 0) {
-                            setValidationErrors(prev => ({...prev, images: "At least one image is required"}));
-                          } else {
-                            setValidationErrors(prev => ({...prev, images: validateField("images", newImages)}));
-                          }
-                        }}
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                    <span className="text-xs text-gray-500 truncate max-w-full">{img.name.substring(0, 10)}...</span>
+                <div className="relative bg-gray-100 rounded-md p-2 w-20 h-20 flex items-center justify-center overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-md">
+                    <button
+                      type="button"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => {
+                        setImage(null);
+                        setValidationErrors((prev) => ({ ...prev, image: "" }));
+                      }}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </button>
                   </div>
-                ))}
+                  <span className="text-xs text-gray-500 truncate max-w-full">{image.name.substring(0, 10)}...</span>
+                </div>
               </div>
             )}
-            {validationErrors.images && touched.images && (
+            {validationErrors.image && touched.image && (
               <p className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded-md border border-red-200 flex items-center">
                 <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                {validationErrors.images}
+                {validationErrors.image}
               </p>
             )}
           </div>
@@ -399,7 +391,7 @@ export default function AddBlog() {
             </button>
             <button
               type="submit"
-              className={`px-6 py-2.5 bg-red-500 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm flex items-center ${hasErrors || charCount > MAX_CONTENT_LENGTH ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center ${hasErrors || charCount > MAX_CONTENT_LENGTH ? "opacity-50 cursor-not-allowed" : ""}`}
               disabled={hasErrors || charCount > MAX_CONTENT_LENGTH}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
