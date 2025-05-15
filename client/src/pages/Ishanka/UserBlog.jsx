@@ -30,10 +30,9 @@ const BlogCard = ({ blog, index }) => {
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
 
-  const mainImage =
-    Array.isArray(blog.blogImages) && blog.blogImages.length > 0
-      ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
-      : placeholderImage;
+  const mainImage = blog.image
+    ? `http://localhost:8080/blog/uploads/${blog.image}`
+    : placeholderImage;
 
   const description =
     blog.content.length > 120 ? `${blog.content.substring(0, 120)}...` : blog.content;
@@ -85,10 +84,9 @@ const CategoryBlogCard = ({ blog, index }) => {
   const placeholderImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h8KAAAAABJRU5ErkJggg==";
 
-  const mainImage =
-    Array.isArray(blog.blogImages) && blog.blogImages.length > 0
-      ? `http://localhost:5000/blog/uploads/${blog.blogImages[0]}`
-      : placeholderImage;
+  const mainImage = blog.image
+    ? `http://localhost:8080/blog/uploads/${blog.image}`
+    : placeholderImage;
 
   const description =
     blog.content.length > 120 ? `${blog.content.substring(0, 120)}...` : blog.content;
@@ -256,8 +254,8 @@ export default function UserBlog() {
                     <Link to={`/blog/${blog.id}`} key={index}>
                       <img
                         src={
-                          blog.blogImages && blog.blogImages.length > 0
-                            ? `http://localhost:8080/blog/uploads/${blog.blogImages[0]}`
+                          blog.image
+                            ? `http://localhost:8080/blog/uploads/${blog.image}`
                             : placeholderImage
                         }
                         alt={blog.title}
@@ -328,7 +326,7 @@ export default function UserBlog() {
                 I hope my journey and content inspire you to see beauty in everyday moments.
               </p>
               <Link
-                to="www.instagram.com/__dinidu____/"
+                to="https://www.instagram.com/__dinidu____/"
                 className="inline-block bg-red-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-300 shadow-md hover:shadow-lg"
               >
                 Hire Me
@@ -362,8 +360,8 @@ export default function UserBlog() {
                   <div className="relative">
                     <img
                       src={
-                        blogs[2].blogImages && blogs[2].blogImages.length > 0
-                          ? `http://localhost:8080/blog/uploads/${blogs[2].blogImages[0]}`
+                        blogs[2].image
+                          ? `http://localhost:8080/blog/uploads/${blogs[2].image}`
                           : placeholderImage
                       }
                       alt={blogs[2].title}
@@ -387,8 +385,8 @@ export default function UserBlog() {
                   <div className="relative">
                     <img
                       src={
-                        blogs[3].blogImages && blogs[3].blogImages.length > 0
-                          ? `http://localhost:8080/blog/uploads/${blogs[3].blogImages[0]}`
+                        blogs[3].image
+                          ? `http://localhost:8080/blog/uploads/${blogs[3].image}`
                           : placeholderImage
                       }
                       alt={blogs[3].title}
@@ -413,8 +411,8 @@ export default function UserBlog() {
                   <div className="relative">
                     <img
                       src={
-                        blogs[4].blogImages && blogs[4].blogImages.length > 0
-                          ? `http://localhost:8080/blog/uploads/${blogs[4].blogImages[0]}`
+                        blogs[4].image
+                          ? `http://localhost:8080/blog/uploads/${blogs[4].image}`
                           : placeholderImage
                       }
                       alt={blogs[4].title}
@@ -489,8 +487,8 @@ export default function UserBlog() {
                                 <div className="relative group">
                                   <img
                                     src={
-                                      blog.blogImages && blog.blogImages.length > 0
-                                        ? `http://localhost:8080/blog/uploads/${blog.blogImages[0]}`
+                                      blog.image
+                                        ? `http://localhost:8080/blog/uploads/${blog.image}`
                                         : placeholderImage
                                     }
                                     alt={blog.title}
@@ -570,8 +568,8 @@ export default function UserBlog() {
                                 <div className="md:w-1/2 h-full overflow-hidden">
                                   <img
                                     src={
-                                      blog.blogImages && blog.blogImages.length > 0
-                                        ? `http://localhost:8080/blog/uploads/${blog.blogImages[0]}`
+                                      blog.image
+                                        ? `http://localhost:8080/blog/uploads/${blog.image}`
                                         : placeholderImage
                                     }
                                     alt={blog.title}
