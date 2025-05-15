@@ -293,29 +293,6 @@ export default function IndividualProgress() {
           >
             Download Progress as PDF
           </button>
-          <button
-            className={`${
-              isSpeaking && !isPaused ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
-            } text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105`}
-            onClick={startSpeech}
-            disabled={!progress.name && !progress.description}
-          >
-            {isSpeaking && !isPaused ? "Speaking..." : isPaused ? "Resume" : "Listen to Progress"}
-          </button>
-          <button
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
-            onClick={pauseSpeech}
-            disabled={!isSpeaking || isPaused}
-          >
-            Pause
-          </button>
-          <button
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
-            onClick={stopSpeech}
-            disabled={!isSpeaking}
-          >
-            Stop
-          </button>
         </div>
       </div>
     </div>
