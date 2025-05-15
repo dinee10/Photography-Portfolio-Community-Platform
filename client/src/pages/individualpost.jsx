@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import jsPDF from "jspdf";
 import Navbar from "../component/Navbar";
 import Footer from "../component/Footer";
 import { ChevronLeft } from "lucide-react";
@@ -10,23 +11,35 @@ export default function IndividualPost() {
   const [post, setPost] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
-  const [follows, setFollows] = useState(0); // New state for follows
-  const [hasFollowed, setHasFollowed] = useState(false); // New state for follow status
+  const [follows, setFollows] = useState(0);
+  const [hasFollowed, setHasFollowed] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
+  const navigate = useNavigate();
+  const userId = localStorage.getItem('userId');
+  const minDate = new Date('2025-05-15');
 
   useEffect(() => {
+    if (!userId) {
+      setError("You must be logged in to view the post.");
+      navigate('/login');
+      setLoading(false);
+      return;
+    }
+
     if (!id) {
       setError("No post ID provided");
       setLoading(false);
       return;
     }
 
-    // Load likes, follows, comments, and follow status from localStorage
+    // Load likes, follows, comments, and states from localStorage
     const storedLikes = localStorage.getItem(`likes_${id}`);
     const storedHasLiked = localStorage.getItem(`hasLiked_${id}`);
     const storedFollows = localStorage.getItem(`follows_${id}`);
@@ -39,21 +52,31 @@ export default function IndividualPost() {
     if (storedHasFollowed) setHasFollowed(storedHasFollowed === "true");
     if (storedComments) setComments(JSON.parse(storedComments));
 
-    // Fetch post data
     setLoading(true);
     axios
-      .get(`http://localhost:8080/post/${id}`)
+      .get(`http://localhost:8080/post/${id}`, { params: { userId } })
       .then((res) => {
         console.log("Post data fetched:", res.data);
-        setPost(res.data || {});
+        const fetchedPost = res.data || {};
+        const createdAtDate = fetchedPost.createdAt ? new Date(fetchedPost.createdAt) : null;
+        if (createdAtDate && !isNaN(createdAtDate) && createdAtDate < minDate) {
+          console.warn("Invalid createdAt date:", fetchedPost.createdAt);
+          fetchedPost.createdAt = null;
+        }
+        const updatedAtDate = fetchedPost.updatedAt ? new Date(fetchedPost.updatedAt) : null;
+        if (updatedAtDate && !isNaN(updatedAtDate) && updatedAtDate < minDate) {
+          console.warn("Invalid updatedAt date:", fetchedPost.updatedAt);
+          fetchedPost.updatedAt = null;
+        }
+        setPost(fetchedPost);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching post:", err);
-        setError("Failed to fetch post. Please check the server or try again later.");
+        setError(err.response?.data?.message || "Failed to fetch post. Please try again later.");
         setLoading(false);
       });
-  }, [id]);
+  }, [id, userId, navigate]);
 
   const addNotification = (action) => {
     const notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
@@ -105,7 +128,7 @@ export default function IndividualPost() {
       const newComment = {
         id: Date.now(),
         text: comment,
-        author: "Anonymous",
+        author: post.user?.fullname || "Anonymous",
         date: new Date().toLocaleString(),
       };
       const updatedComments = [...comments, newComment];
@@ -142,6 +165,209 @@ export default function IndividualPost() {
     addNotification("deleted comment");
   };
 
+  const startSpeech = () => {
+    if (!window.speechSynthesis) {
+      alert("Your browser does not support speech synthesis.");
+      return;
+    }
+
+    if (isSpeaking && !isPaused) {
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance();
+    const createdDate = post.createdAt
+      ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : "Not available";
+    const updatedDate = post.updatedAt
+      ? new Date(post.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : "Not available";
+    const textToSpeak = `${post.name || "Untitled Post"}. Topic: ${post.topic || "No topic"}. ${
+      post.description || "No description available"
+    }. Status: ${post.status || "Unknown"}. Tag: ${post.tag || "None"}. Created: ${createdDate}. Updated: ${updatedDate}. Likes: ${likes}. Follows: ${follows}.`;
+    utterance.text = textToSpeak;
+    utterance.lang = "en-US";
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setIsPaused(false);
+      window.speechSynthesis.cancel();
+    };
+
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+    } else {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+      setIsSpeaking(true);
+      setIsPaused(false);
+    }
+  };
+
+  const pauseSpeech = () => {
+    if (isSpeaking && !isPaused) {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const stopSpeech = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setIsPaused(false);
+    }
+  };
+
+  const loadImageAsBase64 = (url, maxRetries = 3, timeout = 5000) => {
+    return new Promise((resolve, reject) => {
+      let retries = 0;
+      const attemptLoad = () => {
+        fetch(url, { mode: "cors" })
+          .then((response) => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.blob();
+          })
+          .then((blob) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error("Failed to read blob"));
+            reader.readAsDataURL(blob);
+          })
+          .catch((error) => {
+            console.error(`Image load attempt ${retries + 1} failed for ${url}:`, error);
+            if (retries < maxRetries) {
+              retries++;
+              setTimeout(attemptLoad, 1000);
+            } else {
+              reject(new Error(`Max retries (${maxRetries}) reached for ${url}`));
+            }
+          });
+      };
+      attemptLoad();
+      setTimeout(() => reject(new Error(`Timeout after ${timeout}ms for ${url}`)), timeout);
+    });
+  };
+
+  const downloadPDF = async () => {
+    const doc = new jsPDF();
+
+    try {
+      doc.setFontSize(18);
+      const name = post.name || "Untitled";
+      doc.text(name, 10, 40);
+
+      doc.setFontSize(12);
+      const topic = post.topic || "No topic";
+      doc.text(`Topic: ${topic}`, 10, 50);
+
+      doc.text(`Status: ${post.status || "Unknown"}`, 10, 60);
+
+      doc.text(`Tag: ${post.tag || "None"}`, 10, 70);
+
+      doc.text(`Likes: ${likes}`, 10, 80);
+
+      doc.text(`Follows: ${follows}`, 10, 90);
+
+      const createdDate = post.createdAt
+        ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : "Not available";
+      doc.text(`Created: ${createdDate}`, 10, 100);
+
+      const updatedDate = post.updatedAt
+        ? new Date(post.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : "Not available";
+      doc.text(`Updated: ${updatedDate}`, 10, 110);
+
+      let yPosition = 120;
+      if (post.image) {
+        const imageUrl = `http://localhost:8080/post/image/${post.image}`;
+        try {
+          const imageBase64 = await loadImageAsBase64(imageUrl);
+          const format = imageBase64.startsWith("data:image/jpeg") ? "JPEG" : "PNG";
+          doc.addImage(imageBase64, format, 10, yPosition, 150, 80);
+          yPosition += 90;
+        } catch (error) {
+          console.error("Failed to load post image:", error);
+        }
+      }
+
+      // Add comments to PDF
+      doc.setFontSize(12);
+      doc.text("Comments:", 10, yPosition);
+      yPosition += 10;
+      comments.forEach((comment, index) => {
+        const commentText = `${index + 1}. ${comment.author}: ${comment.text} (${comment.date})`;
+        const commentLines = doc.splitTextToSize(commentText, 180);
+        commentLines.forEach((line) => {
+          if (yPosition < 280) {
+            doc.text(line, 10, yPosition);
+            yPosition += 10;
+          }
+        });
+      });
+
+      addContentToPDF(doc, post.description || "No description available", name, yPosition);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      doc.setFontSize(18);
+      doc.text(post.name || "Untitled", 10, 40);
+      doc.setFontSize(12);
+      doc.text(`Topic: ${post.topic || "No topic"}`, 10, 50);
+      doc.text(`Status: ${post.status || "Unknown"}`, 10, 60);
+      doc.text(`Tag: ${post.tag || "None"}`, 10, 70);
+      doc.text(`Likes: ${likes}`, 10, 80);
+      doc.text(`Follows: ${follows}`, 10, 90);
+      doc.text(
+        `Created: ${post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "Not available"}`,
+        10, 100
+      );
+      doc.text(
+        `Updated: ${post.updatedAt ? new Date(post.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "Not available"}`,
+        10, 110
+      );
+      addContentToPDF(doc, post.description || "No description available", post.name || "Untitled", 120);
+    }
+  };
+
+  const addContentToPDF = (doc, content, title, startY) => {
+    let yPosition = startY + 10;
+    doc.setFontSize(10);
+    doc.text("Description:", 10, yPosition);
+    yPosition += 10;
+
+    const maxHeight = 280;
+    const contentLines = doc.splitTextToSize(content, 180);
+
+    let totalHeightNeeded = yPosition;
+    for (let line of contentLines) {
+      totalHeightNeeded += 10;
+      if (totalHeightNeeded > maxHeight) {
+        const availableHeight = maxHeight - yPosition;
+        const maxLines = Math.floor(availableHeight / 10);
+        const linesToShow = contentLines.slice(0, maxLines);
+
+        linesToShow.forEach((line, index) => {
+          doc.text(line, 10, yPosition + index * 10);
+        });
+
+        doc.text("(Description truncated due to single-page limit...)", 10, yPosition + maxLines * 10);
+        doc.save(`${title || "Post"}.pdf`);
+        return;
+      }
+    }
+
+    contentLines.forEach((line, index) => {
+      doc.text(line, 10, yPosition + index * 10);
+    });
+
+    doc.save(`${title || "Post"}.pdf`);
+  };
+
   if (loading) {
     return (
       <div>
@@ -172,7 +398,7 @@ export default function IndividualPost() {
         <Navbar />
       </div>
       <div className="max-w-3xl mx-auto mt-6 md:mt-10 pt-20 px-4">
-        <button 
+        <button
           onClick={() => window.history.back()}
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
@@ -185,18 +411,18 @@ export default function IndividualPost() {
             <div className="w-full h-64 md:h-96 overflow-hidden">
               <img
                 src={`http://localhost:8080/post/image/${post.image}`}
-                alt={post.name}
+                alt={post.name || "Post Image"}
                 className="w-full h-full object-cover"
                 onError={(e) => (e.target.src = "https://via.placeholder.com/600x400")}
               />
             </div>
           )}
-          
+
           <div className="p-6 md:p-8">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-2">
-                  {post.status || 'General'}
+                  {post.status || "General"}
                 </span>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                   {post.name || "Untitled Post"}
@@ -205,11 +431,16 @@ export default function IndividualPost() {
             </div>
 
             <div className="flex items-center text-gray-500 text-sm mb-6">
-              <span>Posted by {post.author || 'Unknown'} on {new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}</span>
+              <span>
+                Posted by {post.user?.fullname || "Unknown"} on{" "}
+                {post.createdAt
+                  ? new Date(post.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Not available"}
+              </span>
             </div>
 
             <div className="prose max-w-none">
@@ -229,7 +460,7 @@ export default function IndividualPost() {
               <div className="mt-4">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {post.tag.split(',').map((tag, index) => (
+                  {post.tag.split(",").map((tag, index) => (
                     <span key={index} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded">
                       {tag.trim()}
                     </span>
@@ -255,6 +486,14 @@ export default function IndividualPost() {
               >
                 {hasFollowed ? "Unfollow" : "Follow"} ({follows})
               </button>
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300"
+                onClick={downloadPDF}
+              >
+                Download Post as PDF
+              </button>
+              
+             
             </div>
 
             <div className="mt-6">
