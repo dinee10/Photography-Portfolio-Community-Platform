@@ -1,4 +1,5 @@
 
+import '../App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from '../pages/Home/Register';
 import Login from '../pages/Home/Login';
@@ -24,6 +25,11 @@ import PostList from '../pages/Post';
 import PostUpdate from '../pages/PostUpdate';
 import ListPost from '../pages/Postlist'
 import Individualpost from '../pages/individualpost';
+import AddUser from '../pages/Learningplan/AddUser';
+import EditUser from '../pages/Learningplan/EditUser';
+import ViewUser from '../pages/Learningplan/ViewUser';
+import Navbar from '../layout/Navbar';
+import Home from '../layout/Home';
 
 const AppRoutes = () => {
   return (
@@ -67,6 +73,11 @@ const AppRoutes = () => {
           <Route path='/post/update/:id' element={<PostUpdate />} />
           <Route path='/listpost' element={<ListPost />} />
           <Route path='/post/:id'element= {<Individualpost/>}/>
+            
+            <Route exact path='/home'element={<Home/>}/>
+        <Route exact path='adduser' element={<AddUser/>}/>
+        <Route exact path='/edituser/:id'element={<EditUser/>}/>
+        <Route exact path='/viewuser/:id' element={<ViewUser />} />
 
           </Routes>
 </Router>   
@@ -75,4 +86,5 @@ const AppRoutes = () => {
 }
 
 export default AppRoutes
+
 

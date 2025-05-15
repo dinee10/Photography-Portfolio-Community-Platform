@@ -1,4 +1,6 @@
+
 import AppRoutes from './routes/Approutes'
+
 
 function App() {
 
@@ -7,9 +9,11 @@ function App() {
  
    <>
       <div>
+
   
       <AppRoutes />
   
+
       </div>
    
 
