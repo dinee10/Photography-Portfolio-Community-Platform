@@ -6,17 +6,9 @@ import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import logo from "../../assets/Dinitha/logo3.png"; // Your logo path
 
-// Import Swiper styles and components
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { Navigation, Pagination } from "swiper/modules";
-
 export default function IndividualBlog() {
   const { id } = useParams();
   const [blog, setBlog] = useState({});
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // Track the selected image index
   const [error, setError] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false); // Track if speech is active
   const [isPaused, setIsPaused] = useState(false); // Track if speech is paused
@@ -141,26 +133,19 @@ export default function IndividualBlog() {
       const author = blog.author || "Unknown Author";
       doc.text(`By: ${author}`, 10, 50);
 
-      // Add date (fallback if createdAt is not present)
-      const date = blog.createdAt
-        ? new Date(blog.createdAt).toLocaleDateString()
-        : new Date().toLocaleDateString();
-      doc.text(`Date: ${date}`, 10, 60);
-
-      // Load and add the selected blog image if available
-      let yPosition = 70;
-      if (blog.blogImages && blog.blogImages.length > 0) {
-        const selectedImage = blog.blogImages[selectedImageIndex];
-        const imageUrl = `http://localhost:8080/blog/uploads/${selectedImage}`;
-        console.log("Attempting to load selected blog image from:", imageUrl);
+      // Load and add the blog image if available
+      let yPosition = 60;
+      if (blog.image) {
+        const imageUrl = `http://localhost:8080/blog/uploads/${blog.image}`;
+        console.log("Attempting to load blog image from:", imageUrl);
         try {
           const imageBase64 = await loadImageAsBase64(imageUrl);
-          console.log("Selected blog image loaded successfully (first 50 chars):", imageBase64.slice(0, 50) + "...");
+          console.log("Blog image loaded successfully (first 50 chars):", imageBase64.slice(0, 50) + "...");
           const format = imageBase64.startsWith("data:image/jpeg") ? "JPEG" : "PNG";
           doc.addImage(imageBase64, format, 10, yPosition, 150, 80);
           yPosition += 90;
         } catch (error) {
-          console.error("Failed to load selected blog image:", error);
+          console.error("Failed to load blog image:", error);
         }
       }
 
@@ -173,8 +158,7 @@ export default function IndividualBlog() {
       doc.text(blog.title || "Untitled", 10, 40);
       doc.setFontSize(12);
       doc.text(`By: ${blog.author || "Unknown Author"}`, 10, 50);
-      doc.text(`Date: ${blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}`, 10, 60);
-      addContentToPDF(doc, blog.content || "No content available", blog.title || "Untitled", 70);
+      addContentToPDF(doc, blog.content || "No content available", blog.title || "Untitled", 60);
     }
   };
 
@@ -235,40 +219,18 @@ export default function IndividualBlog() {
 
         <div className="mb-8 text-center">
           <p className="text-lg text-gray-600">
-            By <span className="font-semibold">{blog.author || "Unknown Author"}</span> |{" "}
-            {blog.createdAt
-              ? new Date(blog.createdAt).toLocaleDateString()
-              : new Date().toLocaleDateString()}
+            By <span className="font-semibold">{blog.author || "Unknown Author"}</span>
           </p>
         </div>
 
-        {blog.blogImages && blog.blogImages.length > 0 && (
+        {blog.image && (
           <div className="mb-8">
-            <Swiper
-              modules={[Navigation, Pagination]}
-              navigation
-              pagination={{ clickable: true }}
-              spaceBetween={10}
-              slidesPerView={1}
-              loop={true}
-              className="rounded-lg shadow-lg"
-              onSlideChange={(swiper) => setSelectedImageIndex(swiper.realIndex)}
-            >
-              {blog.blogImages.map((image, index) => (
-                <SwiperSlide key={index}>
-                  <img
-                    src={`http://localhost:8080/blog/uploads/${image}`}
-                    alt={`Slide ${index + 1}`}
-                    className="w-full h-auto object-cover rounded-lg cursor-pointer"
-                    onError={(e) => (e.target.src = "https://via.placeholder.com/600x400")}
-                    onClick={() => setSelectedImageIndex(index)}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-            <p className="text-center mt-2 text-gray-600">
-              Selected Image: {selectedImageIndex + 1} of {blog.blogImages.length}
-            </p>
+            <img
+              src={`http://localhost:8080/blog/uploads/${blog.image}`}
+              alt={blog.title || "Blog image"}
+              className="w-full h-auto object-cover rounded-lg shadow-lg"
+              onError={(e) => (e.target.src = "https://via.placeholder.com/600x400")}
+            />
           </div>
         )}
 
@@ -284,7 +246,6 @@ export default function IndividualBlog() {
             Download Blog as PDF
           </button>
           <button
-three
             className={`${
               isSpeaking && !isPaused ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
             } text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105`}

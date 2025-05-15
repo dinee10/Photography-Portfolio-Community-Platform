@@ -10,7 +10,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between p-4">
         {/* Creative Navbar Text */}
         <div className="text-2xl font-bold">
-          <Link to="/home" className="text-3xl font-bold mb-4 md:mb-0 text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-purple-600 hover:from-red-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300 animate-pulse-once">
+          <Link to="/listpost" className="text-3xl font-bold mb-4 md:mb-0 text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-purple-600 hover:from-red-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300 animate-pulse-once">
             <span className="tracking-widest">TheClicK</span>
             
           </Link>
@@ -19,7 +19,7 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex flex-1 justify-center space-x-6">
           <div className="relative group">
-            <Link to="/home" className="text-white hover:text-red-500 transition duration-300 flex items-center">
+            <Link to="/listpost" className="text-white hover:text-red-500 transition duration-300 flex items-center">
               Home
               <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
@@ -44,8 +44,8 @@ const Navbar = () => {
               <Link to="/channels/sub2" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Sub Channel 2</Link>
             </div>
           </div>
-          <Link to="/pricing" className="text-white hover:text-red-500 transition duration-300">
-            Pricing
+          <Link to="/home" className="text-white hover:text-red-500 transition duration-300">
+            LearningPlan
           </Link>
           <Link to="/user-blog" className="text-white hover:text-red-500 transition duration-300">
             Blog

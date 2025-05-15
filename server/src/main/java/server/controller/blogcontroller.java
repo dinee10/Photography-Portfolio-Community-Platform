@@ -13,6 +13,7 @@ import server.model.UserModel;
 import server.repository.BlogRepository;
 import server.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/blog")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true" )
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class blogcontroller {
 
     @Autowired
@@ -36,6 +37,7 @@ public class blogcontroller {
     private static final String UPLOAD_DIR = "src/main/uploads/";
 
     @PostMapping("/add")
+    @Transactional
     public ResponseEntity<Map<String, String>> addBlog(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
@@ -82,10 +84,11 @@ public class blogcontroller {
                 }
             }
 
-            System.out.println("Saving blog to database");
-            blogRepository.save(newBlog);
-            System.out.println("Blog saved successfully");
+            System.out.println("Blog ID before save: " + newBlog.getId());
+            BlogModel savedBlog = blogRepository.save(newBlog);
+            System.out.println("Blog ID after save: " + savedBlog.getId());
             response.put("message", "Blog added successfully");
+            response.put("blogId", savedBlog.getId().toString());
             return ResponseEntity.ok(response);
         } catch (UserNotFoundException e) {
             System.err.println("User not found: " + e.getMessage());
@@ -158,6 +161,7 @@ public class blogcontroller {
     }
 
     @PutMapping("/update/{id}")
+    @Transactional
     public ResponseEntity<BlogModel> updateBlog(
             @PathVariable Long id,
             @RequestParam(value = "title", required = false) String title,
@@ -222,6 +226,7 @@ public class blogcontroller {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Map<String, String>> deleteBlog(@PathVariable Long id, @RequestParam("userId") Long userId) {
         Map<String, String> response = new HashMap<>();
         try {

@@ -45,7 +45,7 @@ function Home() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      loadUsers(); // Refresh users to show updated image
+      loadUsers();
       alert('Image uploaded successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -60,14 +60,6 @@ function Home() {
     }
   };
 
-  const backgroundStyle = {
-    backgroundImage: `url(${background})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    minHeight: '100vh',
-    paddingTop: '20px',
-  };
-
   useEffect(() => {
     loadUsers();
   }, []);
@@ -77,90 +69,95 @@ function Home() {
   );
 
   return (
-    <div style={backgroundStyle}>
-      <div className="container">
-        <div className="py-4">
-          <div className="mb-3 d-flex justify-content-center">
-            <input
-              type="text"
-              className="form-control w-50"
-              placeholder="Search by Lesson Name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+    <div className="home-container">
+      <div className="container py-5">
+        {/* Search Bar */}
+        <div className="mb-4 d-flex justify-content-center">
+          <input
+            type="text"
+            className="form-control search-input"
+            placeholder="Search by Lesson Name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-          <div className="row">
-            {filteredUsers.map((user, index) => (
-              <div className="col-md-4 mb-4" key={index}>
-                <div className="card" style={{ width: '18rem' }}>
-                  {/* Display user image or placeholder */}
-                  <img
-  src={
-    user.imageData
-      ? `data:${user.imageType};base64,${user.imageData}`
-      : 'https://via.placeholder.com/150'
-  }
-  className="card-img-top"
-  alt="Lesson thumbnail"
-  style={{ width: '200x', height: '300px', objectFit: 'cover' }}
-/>
-                  <div className="card-body">
-                    <h5 className="card-title">{user.name}</h5>
-                    <p className="card-text">
-                      <strong>Teacher's Email:</strong> {user.email}
-                      <br />
-                      <strong>Views:</strong> {user.age}
-                      <br />
-                      <strong>Video Link:</strong>{' '}
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          incrementLikes(user.id, user.description);
-                        }}
-                      >
-                        {user.description}
-                      </a>
-                    </p>
-                    <div className="d-flex gap-2 flex-wrap">
-                      <Link className="btn btn-primary" to={`/viewuser/${user.id}`}>
-                        View
-                      </Link>
-                      <Link className="btn btn-outline-primary" to={`/edituser/${user.id}`}>
-                        Edit
-                      </Link>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => deleteUser(user.id)}
-                      >
-                        Delete
-                      </button>
-                      {/* Image upload input */}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageChange(user.id, e)}
-                        style={{ display: 'none' }}
-                        id={`image-upload-${user.id}`}
-                      />
-                      <label
-                        htmlFor={`image-upload-${user.id}`}
-                        className="btn btn-outline-secondary"
-                      >
-                        Upload Image
-                      </label>
-                    </div>
+        {/* Add New Lessons Button */}
+        <div className="mb-4 d-flex justify-content-center">
+          <Link className="btn btn-primary custom-btn" to="/adduser">
+            Add New Lesson
+          </Link>
+        </div>
+
+        {/* Lessons Grid */}
+        <div className="row g-4">
+          {filteredUsers.map((user, index) => (
+            <div className="col-md-4 col-sm-6" key={index}>
+              <div className="card lesson-card h-100">
+                <img
+                  src={
+                    user.imageData
+                      ? `data:${user.imageType};base64,${user.imageData}`
+                      : 'https://via.placeholder.com/150'
+                  }
+                  className="card-img-top"
+                  alt="Lesson thumbnail"
+                />
+                <div className="card-body">
+                  <h5 className="card-title">{user.name}</h5>
+                  <p className="card-text">
+                    <strong>Teacher's Email:</strong> {user.email}
+                    <br />
+                    <strong>Views:</strong> {user.age}
+                    <br />
+                    <strong>Video Link:</strong>{' '}
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        incrementLikes(user.id, user.description);
+                      }}
+                      className="text-primary"
+                    >
+                      Watch Now
+                    </a>
+                  </p>
+                  <div className="d-flex gap-2 flex-wrap">
+                    <Link className="btn btn-outline-primary btn-sm custom-btn" to={`/viewuser/${user.id}`}>
+                      View
+                    </Link>
+                    <Link className="btn btn-outline-secondary btn-sm custom-btn" to={`/edituser/${user.id}`}>
+                      Edit
+                    </Link>
+                    <button
+                      className="btn btn-outline-danger btn-sm custom-btn"
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      Delete
+                    </button>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(user.id, e)}
+                      style={{ display: 'none' }}
+                      id={`image-upload-${user.id}`}
+                    />
+                    <label
+                      htmlFor={`image-upload-${user.id}`}
+                      className="btn btn-outline-info btn-sm custom-btn"
+                    >
+                      Upload Image
+                    </label>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {filteredUsers.length === 0 && (
-            <div className="text-center text-muted mt-4">No lessons found</div>
-          )}
+            </div>
+          ))}
         </div>
+
+        {filteredUsers.length === 0 && (
+          <div className="text-center text-muted mt-4">No lessons found</div>
+        )}
       </div>
     </div>
   );
