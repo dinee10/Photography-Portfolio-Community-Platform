@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import './App.css';
+import Approutes from './routes/Approutes'
+
 
 
 function App() {
@@ -7,7 +10,7 @@ function App() {
   return (
     <>
       <div>
-       
+       <Approutes/>
       </div>
      
     </>
